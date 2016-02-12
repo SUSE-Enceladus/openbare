@@ -1,0 +1,220 @@
+{% extends 'library/base.html' %}
+{% load markdown_deux_tags %}
+{% load formatting_filters %}
+
+{% block main %}
+  <div class="jumbotron openbare-background">
+    <h1>SUSE openbare</h1>
+    <p>
+      Public Cloud Demo Account Library
+    </p>
+    {% if not user or user.is_anonymous %}
+    <p>
+      <a class="btn btn-success btn-lg" href="{% url 'social:begin' 'opensuse' %}?next={{ request.path }}">Log in</a>
+    </p>
+    {% endif %}
+  </div>
+
+  {% if user and not user.is_anonymous %}
+    <div class="row">
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Library resources</h3>
+          </div>
+          <div class="panel-body">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Resource</th>
+                  <th>Available?</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for resource in resources %}
+                <tr>
+                  <td>
+                    <button type="button" class="btn btn-link" data-toggle="modal" data-target="#resource_{{ resource.item_subtype }}_details">{{ resource.name }}</button>
+                  </td>
+                  <td>
+                    {% if resource.is_available_for_user %}
+                      <a href="{%url 'library:checkout' resource.item_subtype %}" role="button" class="btn btn-default btn-xs">Checkout</a>
+                    {% else %}
+                      Due on {{ resource.next_available_date|format_date }}
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Checked out to me</h3>
+          </div>
+          <div class="panel-body">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Resource</th>
+                  <th>Due date</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for checked_out_item in user_items %}
+                <tr>
+                  <td>
+                    <button type="button" class="btn btn-link" data-toggle="modal" data-target="#item_{{ checked_out_item.pk }}_details">{{ checked_out_item.name }}</button>
+                  </td>
+                  <td>
+                    {{ checked_out_item.due_date|format_date }}
+                    {% if checked_out_item.is_renewable %}
+                      <a href="{%url 'library:renew' checked_out_item.pk %}" role="button" class="btn btn-default btn-xs">Renew</a>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <a href="{%url 'library:checkin' checked_out_item.pk %}" role="button" class="btn btn-default btn-xs">Return</a>
+                  </td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% for resource in resources %}
+      <div class="modal fade" id="resource_{{ resource.item_subtype }}_details" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title" id="myModalLabel">{{ resource.name }}</h4>
+            </div>
+            <div class="modal-body">
+              {{ resource.description|markdown }}
+              <table class="table">
+                <caption>{{ resource.checked_out_items.count }} of {{ resource.max_checked_out }} are checked out.</caption>
+                <thead>
+                  <tr>
+                    <th>To</th>
+                    <th>Due date</th>
+                    <th>Renewable?</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for checked_out_item in resource.checked_out_items %}
+                    <tr>
+                      <td>
+                        {{ checked_out_item.user }}
+                      </td>
+                      <td>
+                        {{ checked_out_item.due_date }}
+                      </td>
+                      <td>
+                        {% if checked_out_item.is_renewable %}
+                          <i class="fa fa-check"></i>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+              {% if resource.is_available_for_user %}
+                <a href="{%url 'library:checkout' resource.item_subtype %}" role="button" class="btn btn-default">Checkout</a>
+              {% else %}
+                <button class="btn btn-disabled" data-toggle="tooltip" data-placement="left" title="Not available. Due back on {{ resource.next_available_date|format_date }}.">Checkout</button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+
+    {% for checked_out_item in user_items %}
+      <div class="modal fade" id="item_{{ checked_out_item.pk }}_details" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title" id="myModalLabel">
+                {{ checked_out_item }}
+              </h4>
+            </div>
+            <div class="modal-body">
+              <dl>
+                <dt>Checked out on:</dt>
+                <dd>
+                  {{ checked_out_item.checked_out_on|format_date }}
+                </dd>
+                <dt>Renewals:</dt>
+                <dd>
+                  {{ checked_out_item.renewals }} of {{ checked_out_item.max_renewals }}
+                </dd>
+                <dt>Current due date:</dt>
+                <dd>
+                  {{ checked_out_item.due_date|format_date }}
+                </dd>
+                <dt>Maximum due date:</dt>
+                <dd>
+                  {{ checked_out_item.max_due_date|format_date }}
+                </dd>
+              </dl>
+            </div>
+            <div class="modal-footer">
+              {% if checked_out_item.is_renewable %}
+                <a href="{%url 'library:renew' checked_out_item.pk %}" role="button" class="btn btn-default">Renew</a>
+              {% endif %}
+              <a href="{%url 'library:checkin' checked_out_item.pk %}" role="button" class="btn btn-default">Return</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+    {% if checkout %}
+      <div class="modal fade" id="checkout_credentials" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title" id="myModalLabel">
+                {{ checkout_title }}
+              </h4>
+            </div>
+            <div class="modal-body">
+              <p>
+                Here are the credentials for accessing your instance:
+              </p>
+              <dl>
+                {% for label, value in checkout_credentials.items %}
+                  <dt>{{ label }}</dt>
+                  <dd>
+                    <code>{{ value }}</code>
+                  </dd>
+                {% endfor %}
+              </dl>
+              <p>
+                Be sure to record these before closing this dialog, they cannot be presented again.
+                If you lose these credentials, you will have to return this item, and checkout the resource again.
+              </p>
+            </div>
+            <div class="modal-footer">
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+{% endblock %}
+
+{% block js %}
+  $('#checkout_credentials').modal('show');
+{% endblock %}

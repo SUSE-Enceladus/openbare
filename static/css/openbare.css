@@ -1,0 +1,34 @@
+/*
+Custom rules to supplement bootstrap and theming elements.
+*/
+
+/* provide a background image; esp. for use on Jumbotron */
+.openbare-background {
+    background-image: url(/static/images/openbare-inside.jpg);
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+/* Add a space between entries on a definition list */
+dl > dd {
+    margin-bottom: 1em;
+}
+
+/* Provide a horizontal list of links in the footer */
+.footer li {
+	float: left;
+	margin-right: 1.5em;
+	margin-bottom: 1.5em;
+}
+
+/* Right-aligned items need a reversed margin */
+.footer li.pull-right {
+    margin-right: 0;
+    margin-left: 1.5em;
+}
+
+/* FontAwesome icons in the header need to be colored to match */
+.navbar i {
+    color: #FFF;
+}
+

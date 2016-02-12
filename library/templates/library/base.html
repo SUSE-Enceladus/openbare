@@ -1,0 +1,110 @@
+{% load staticfiles %}
+{% load markdown_deux_tags %}
+{% load bootstrap_filters %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>
+      SUSE openbare - {% block title %}Public Cloud Demo Account Library{% endblock %}
+    </title>
+    <!-- Bootstrap + bootswatch 'yeti' theme -->
+    <link href="{% static 'css/open-sans-font.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
+    <!-- Font Awesome icons -->
+    <link rel="stylesheet" href="{% static 'css/font-awesome.css' %}">
+    <!-- custom CSS -->
+    <link href="{% static 'css/openbare.css' %}" rel="stylesheet">
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+  </head>
+  <body>
+    <!-- Header (navigation bar) -->
+    <nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+            <span class="sr-only">Toggle navigation</span>
+            <i class="fa fa-bars"></i>
+          </button>
+          <a class="navbar-brand" href="{% url 'home' %}">SUSE openbare</a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav">
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            {% if user and not user.is_anonymous %}
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{ user.get_full_name|default:user.username }}<span class="caret"></span></a>
+                <ul class="dropdown-menu" role="menu">
+                  <li><a href="{% url 'auth:logout' %}?next=/">Logout</a></li>
+                </ul>
+              </li>
+            {% else %}
+              <li><a href="{% url 'social:begin' 'opensuse' %}?next={{ request.path }}">Log in</a></li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="container">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-dismissible {{ message.level | bootstrap_alert_class }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+      {% block main %}{% endblock %}
+      <!-- Footer -->
+      <div class="footer">
+        <div class="row">
+          <div class="col-12">
+            <ul class="list-unstyled">
+              <li class="pull-right"><a href="#top">Back to top</a></li>
+              <li>Copyright &copy; 2015 SUSE</li>
+              <li><a data-toggle="modal" data-target="#credits-modal">Attributions</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Credits Modal -->
+    <div class="modal fade" id="credits-modal" tabindex="-1" role="dialog" aria-labelledby="creditsModal">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">Credits</h4>
+          </div>
+          <div class="modal-body">
+            <dl>
+              <dt><a href="{% static 'images/sources/Бібліотека_Амстердаму.JPG' %}">Cover photo</a></dt>
+              <dd>
+                By Anntinomy (Own work) [<a href="http://creativecommons.org/licenses/by-sa/4.0">CC BY-SA 4.0</a>], <a href="https://commons.wikimedia.org/wiki/File%3A%D0%91%D1%96%D0%B1%D0%BB%D1%96%D0%BE%D1%82%D0%B5%D0%BA%D0%B0_%D0%90%D0%BC%D1%81%D1%82%D0%B5%D1%80%D0%B4%D0%B0%D0%BC%D1%83.JPG">via Wikimedia Commons</a>
+              </dd>
+              <dt><a href="http://bootswatch.com/yeti/">'Yeti' theme</a></dt>
+              <dd>
+                Made by <a href="http://thomaspark.co" rel="nofollow">Thomas Park</a>. Contact him at <a href="mailto:thomas@bootswatch.com">thomas@bootswatch.com</a><br/>
+                Code released under the <a href="https://github.com/thomaspark/bootswatch/blob/gh-pages/LICENSE">MIT License</a>.<br/>
+                Based on <a href="http://getbootstrap.com" rel="nofollow">Bootstrap</a>. Icons from <a href="http://fortawesome.github.io/Font-Awesome/" rel="nofollow">Font Awesome</a>. Web fonts from <a href="http://www.google.com/webfonts" rel="nofollow">Google</a>.
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script>
+    $(function () {
+      $('[data-toggle="tooltip"]').tooltip()
+    })
+    {% block js %}{% endblock %}
+  </script>
+</html>
