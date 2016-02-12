@@ -1,23 +1,37 @@
-SUSE Public Cloud Demo Account Library - openbare
+Django Library System - openbare
 =================================================
 
-A library app, allowing 'check out' of a demo account in any framework, for a
-predefined time period. Administrators can manage all demo accounts centrally.
+openbare is a Library System for Django.
+
+The system started out with the intend to provide access to Public Cloud
+accounts for everyone at SUSE. At the onset of the project is was hoped that
+implementation of the framework could be sufficiently generalized to provide
+functionality for pretty much anything that one might keep track of that
+fits the concept of a Public Library. Once the first plugin was developed
+to manage AWS IAM access this hope was realized and the project moved from
+a private repository to a public repository in the hopes that others will
+find the system useful and will contribute back to the project.
+
+We'd like to thank SUSE for sponsoring our work and enabling us to set up the
+project in a company independent way.
 
 
 Prerequisites
 -------------
 
 * python > 3.2
-* [devel:languages:python3](https://build.opensuse.org/project/show/devel:languages:python3)
-  repository from OBS
-* Django ~ 1.8.4 (`zypper in python3-Django`)
-* python-social-auth (`zypper in python3-python-social-auth`)
+* Django ~ 1.8.4
+* python-social-auth
   ** **WARNING**: we are subject to https://github.com/omab/python-social-auth/issues/617
-* django-debug-toolbar (`zypper in python3-django-debug-toolbar`)
-* django-markdown-deux (`zypper in python3-django-markdown-deux`)
-* django-split-settings (`zypper in python3-django-split-settings`)
-* boto3 (`zypper in python3-boto3`)
+* django-debug-toolbar
+* django-markdown-deux
+* django-split-settings
+* boto3
+
+For openSUSE and SUSE Linux Enterprise
+--------------------------------------
+* Add a repository from OBS [devel:languages:python3](https://build.opensuse.org/project/show/devel:languages:python3) appropriate for your distribution to your system
+* `zypper in python3-Django python3-python-social-auth python3-django-debug-toolbar python3-django-markdown-deux python3-django-split-settings python3-boto3`
 
 
 Initializing your development environment
@@ -25,7 +39,7 @@ Initializing your development environment
 
 1.  Get in position
     ```
-    cd pubcloud/generic/src/openbare
+    cd openbare
     ```
 
 1.  Create your local settings
@@ -56,8 +70,6 @@ Initializing your development environment
   3.  Click 'Add resource'
   4.  Fill out the form, and click 'Save'
 
-You may now browse to the application URL (`http://localhost:8000`), login
-with your Novell Login, and use the application.
 
 Useful Links
 ------------
