@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 
 from library.amazon_account_utils import AmazonAccountUtils
 
@@ -70,6 +70,19 @@ class Lendable(models.Model):
         else:
             return next_lendable_due.due_date
 
+    def _validate_renewals(self):
+        # validation occurs as a last step before 'saving'; in order for
+        # renewals to be invalid, it would have to have been incremented beyond
+        # max_renewals in a prior action.
+        if self.renewals > self.max_renewals:
+            raise ValidationError(
+                "Cannot be renewed; only %s renewals are allowed." % self.max_renewals
+            )
+
+    # Django calls this as part of #full_clean (validation)
+    def clean(self):
+        self._validate_renewals()
+
     def due_date(self):
         # '+ 1' is for the initial lending period, before any renewals occur.
         lending_period = self.lending_period_in_days * (self.renewals + 1)
@@ -87,10 +100,9 @@ class Lendable(models.Model):
         return self.renewals < self.max_renewals
 
     def renew(self):
-        if self.is_renewable():
-            self.renewals += 1
-            self.save()
-        return True
+        self.renewals += 1
+        self.full_clean()
+        return self.save()
 
 
 class AmazonDemoAccount(Lendable):

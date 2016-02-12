@@ -2,6 +2,8 @@ from django.contrib import messages
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render, render_to_response
 from django.template.context import RequestContext
+from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
+from django.http import Http404
 
 from library.templatetags import formatting_filters
 from .models import *
@@ -19,6 +21,8 @@ def index(request):
 
 
 def checkout(request, item_subtype):
+    _verify_user(request.user)
+
     item = Lendable(type=item_subtype, user=request.user)
     try:
         item.checkout()
@@ -49,18 +53,29 @@ def checkout(request, item_subtype):
 
 
 def renew(request, primary_key):
-    item = get_object_or_404(Lendable.all_types, pk=primary_key)
-    item.renew()
-    messages.success(
-        request,
-        "'%s' is now due on %s." %
-        (item.name, formatting_filters.format_date(item.due_date()))
-    )
+    _verify_user(request.user)
+
+    item = get_object_or_404(Lendable.all_types, pk=primary_key, user=request.user)
+    try:
+        item.renew()
+    except ValidationError as e:
+        for exception_message in e.message_dict[NON_FIELD_ERRORS]:
+            messages.error(request, exception_message)
+    except Exception as e:
+        messages.error(request, e)
+    else:
+        messages.success(
+            request,
+            "'%s' is now due on %s." %
+            (item.name, formatting_filters.format_date(item.due_date()))
+        )
     return redirect(index)
 
 
 def checkin(request, primary_key):
-    item = get_object_or_404(Lendable.all_types, pk=primary_key)
+    _verify_user(request.user)
+
+    item = get_object_or_404(Lendable.all_types, pk=primary_key, user=request.user)
     try:
         item.checkin()
     except Exception as e:
@@ -76,6 +91,9 @@ def get_lendable_resources(user):
     Collect the classes of items that can be checked out; their class and
     plugin data will be presented as a list of resources to 'check out'.
     '''
+    if (not user or user.is_anonymous()):
+        return []
+
     resources = []
     for lendable in Lendable.__subclasses__():
         resources.append({
@@ -90,8 +108,14 @@ def get_lendable_resources(user):
     return resources
 
 
-def get_items_checked_out_by(user):
-    if user.is_anonymous():
+def get_items_checked_out_by(user=None):
+    if (not user or user.is_anonymous()):
         return []
-    else:
-        return Lendable.all_types.filter(user=user).order_by('checked_out_on')
+
+    return Lendable.all_types.filter(user=user).order_by('checked_out_on')
+
+
+def _verify_user(user=None):
+    if (not user or user.is_anonymous()):
+        raise Http404
+
