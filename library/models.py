@@ -1,3 +1,5 @@
+import django
+
 from datetime import datetime, timedelta
 
 from django.db import models
@@ -21,6 +23,7 @@ class ProxyManager(models.Manager):
 class Lendable(models.Model):
     type = models.CharField(max_length=254)
     checked_out_on = models.DateTimeField(auto_now_add=True)
+    due_on = models.DateTimeField()
     renewals = models.IntegerField(default=0)
     user = models.ForeignKey(User)
     credentials = None
@@ -68,7 +71,7 @@ class Lendable(models.Model):
         except ObjectDoesNotExist:
             return datetime.today()
         else:
-            return next_lendable_due.due_date
+            return next_lendable_due.due_on
 
     def _validate_renewals(self):
         # validation occurs as a last step before 'saving'; in order for
@@ -83,11 +86,6 @@ class Lendable(models.Model):
     def clean(self):
         self._validate_renewals()
 
-    def due_date(self):
-        # '+ 1' is for the initial lending period, before any renewals occur.
-        lending_period = self.lending_period_in_days * (self.renewals + 1)
-        return self.checked_out_on + timedelta(days=lending_period)
-
     def max_due_date(self):
         # '+ 1' is for the initial lending period, before any renewals occur.
         max_lending_period = (
@@ -99,10 +97,24 @@ class Lendable(models.Model):
     def is_renewable(self):
         return self.renewals < self.max_renewals
 
+    def checkout(self):
+        self.checked_out_on = datetime.now(django.utils.timezone.UTC())
+        self.__set_initial_due_date()
+
     def renew(self):
         self.renewals += 1
         self.full_clean()
         return self.save()
+
+    def __set_initial_due_date(self):
+        """
+            When a lendable is checked out, the due date is set to the checkout
+            date plus the lending period.
+        """
+        self.due_on = (
+            self.checked_out_on +
+            timedelta(self.lending_period_in_days)
+        )
 
 
 class AmazonDemoAccount(Lendable):
@@ -126,6 +138,7 @@ cloud gives you access to a massive volume of resources on-demand.
         proxy = True
 
     def checkout(self):
+        super().checkout()
         group = None
         try:
             group = settings.AWS_IAM_GROUP

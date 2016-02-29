@@ -72,7 +72,7 @@
                     <button type="button" class="btn btn-link" data-toggle="modal" data-target="#item_{{ checked_out_item.pk }}_details">{{ checked_out_item.name }}</button>
                   </td>
                   <td>
-                    {{ checked_out_item.due_date|format_date }}
+                    {{ checked_out_item.due_on|format_date }}
                     {% if checked_out_item.is_renewable %}
                       <a href="{%url 'library:renew' checked_out_item.pk %}" role="button" class="btn btn-default btn-xs">Renew</a>
                     {% endif %}
@@ -115,7 +115,7 @@
                         {{ checked_out_item.user }}
                       </td>
                       <td>
-                        {{ checked_out_item.due_date }}
+                        {{ checked_out_item.due_on }}
                       </td>
                       <td>
                         {% if checked_out_item.is_renewable %}
@@ -161,7 +161,7 @@
                 </dd>
                 <dt>Current due date:</dt>
                 <dd>
-                  {{ checked_out_item.due_date|format_date }}
+                  {{ checked_out_item.due_on|format_date }}
                 </dd>
                 <dt>Maximum due date:</dt>
                 <dd>

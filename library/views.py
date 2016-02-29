@@ -34,7 +34,7 @@ def checkout(request, item_subtype):
         messages.success(
             request,
             "'%s' is checked out to you until %s." %
-            (item.name, formatting_filters.format_date(item.due_date()))
+            (item.name, formatting_filters.format_date(item.due_on))
         )
         context_dict = {
             'request': request,
@@ -67,7 +67,7 @@ def renew(request, primary_key):
         messages.success(
             request,
             "'%s' is now due on %s." %
-            (item.name, formatting_filters.format_date(item.due_date()))
+            (item.name, formatting_filters.format_date(item.due_on))
         )
     return redirect(index)
 
