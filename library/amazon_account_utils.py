@@ -148,7 +148,7 @@ class AmazonAccountUtils():
             iam_user.detach_policy(PolicyArn=attached_policy.arn)
         return True
 
-    def create_iam_account(self, username):
+    def create_iam_account(self, username, group=None):
         '''
         Create an IAM account for the given username; return the required
         credentials.
@@ -162,6 +162,8 @@ class AmazonAccountUtils():
         iam_resource = self._get_iam_resource()
         iam_user = iam_resource.User(username).create(Path='/openbare/')
         try:
+            if group:
+                iam_user.add_group(GroupName=group)
             iam_user.create_login_profile(
                 Password=credentials['Password'],
                 PasswordResetRequired=False
