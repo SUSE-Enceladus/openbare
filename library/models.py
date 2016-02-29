@@ -126,7 +126,15 @@ cloud gives you access to a massive volume of resources on-demand.
         proxy = True
 
     def checkout(self):
-        self.credentials = self.amazon_account_utils.create_iam_account(self.user.username)
+        group = None
+        try:
+            group = settings.AWS_IAM_GROUP
+        except:
+            pass
+        self.credentials = self.amazon_account_utils.create_iam_account(
+            self.user.username,
+            group
+        )
 
     def checkin(self):
         self.amazon_account_utils.destroy_iam_account(self.user.username)
