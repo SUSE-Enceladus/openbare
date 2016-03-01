@@ -74,12 +74,10 @@ class Lendable(models.Model):
             return next_lendable_due.due_on
 
     def max_due_date(self):
-        # '+ 1' is for the initial lending period, before any renewals occur.
-        max_lending_period = (
-            self.lending_period_in_days *
-            (self.max_renewals + 1)
+        return (
+            self.due_on +
+            timedelta(self.lending_period_in_days * self.renewals)
         )
-        return self.checked_out_on + timedelta(days=max_lending_period)
 
     def is_renewable(self):
         return self.renewals > 0
