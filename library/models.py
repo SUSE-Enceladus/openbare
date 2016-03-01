@@ -1,3 +1,5 @@
+import django
+
 from datetime import datetime, timedelta
 
 from django.db import models
@@ -21,6 +23,7 @@ class ProxyManager(models.Manager):
 class Lendable(models.Model):
     type = models.CharField(max_length=254)
     checked_out_on = models.DateTimeField(auto_now_add=True)
+    due_on = models.DateTimeField()
     renewals = models.IntegerField(default=0)
     user = models.ForeignKey(User)
     credentials = None
@@ -68,25 +71,7 @@ class Lendable(models.Model):
         except ObjectDoesNotExist:
             return datetime.today()
         else:
-            return next_lendable_due.due_date
-
-    def _validate_renewals(self):
-        # validation occurs as a last step before 'saving'; in order for
-        # renewals to be invalid, it would have to have been incremented beyond
-        # max_renewals in a prior action.
-        if self.renewals > self.max_renewals:
-            raise ValidationError(
-                "Cannot be renewed; only %s renewals are allowed." % self.max_renewals
-            )
-
-    # Django calls this as part of #full_clean (validation)
-    def clean(self):
-        self._validate_renewals()
-
-    def due_date(self):
-        # '+ 1' is for the initial lending period, before any renewals occur.
-        lending_period = self.lending_period_in_days * (self.renewals + 1)
-        return self.checked_out_on + timedelta(days=lending_period)
+            return next_lendable_due.due_on
 
     def max_due_date(self):
         # '+ 1' is for the initial lending period, before any renewals occur.
@@ -97,12 +82,32 @@ class Lendable(models.Model):
         return self.checked_out_on + timedelta(days=max_lending_period)
 
     def is_renewable(self):
-        return self.renewals < self.max_renewals
+        return self.renewals > 0
+
+    def checkout(self):
+        self.checked_out_on = datetime.now(django.utils.timezone.UTC())
+        self.__set_initial_due_date()
+        self.renewals = settings.MAX_RENEWALS.get(self.type, self.max_renewals)
 
     def renew(self):
-        self.renewals += 1
-        self.full_clean()
+        if self.renewals > 0:
+            self.renewals -= 1
+            self.due_on = self.due_on + timedelta(self.lending_period_in_days)
+        else:
+            raise ValidationError(
+                "No more renewals are available for this item."
+            )
         return self.save()
+
+    def __set_initial_due_date(self):
+        """
+            When a lendable is checked out, the due date is set to the checkout
+            date plus the lending period.
+        """
+        self.due_on = (
+            self.checked_out_on +
+            timedelta(self.lending_period_in_days)
+        )
 
 
 class AmazonDemoAccount(Lendable):
@@ -126,6 +131,7 @@ cloud gives you access to a massive volume of resources on-demand.
         proxy = True
 
     def checkout(self):
+        super().checkout()
         group = None
         try:
             group = settings.AWS_IAM_GROUP
