@@ -27,8 +27,9 @@ from library.models import *
 
 def checkin_expired_accounts():
     now = datetime.now(django.utils.timezone.UTC())
-    for lendable in Lendable.all_types.filter(due_on__lte = now)
+    for lendable in Lendable.all_types.filter(due_on__lte=now):
         lendable.checkin()
+
 
 def notify_user():
     now = datetime.now(django.utils.timezone.UTC())
@@ -41,7 +42,7 @@ def notify_user():
             )
         )
         for lendable in lendables:
-            #send_an_email()
+            # send_an_email()
             delta = (lendable.due_on - now)
             # 86400 seconds/day - timedelta as float of days
             lendable.notify_timer = delta.days + delta.seconds / 86400

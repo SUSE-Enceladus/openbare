@@ -62,8 +62,10 @@ class Lendable(models.Model):
 
     @classmethod
     def is_available_for_user(self, user):
-        return (self.lendables.count() < self.max_checked_out and
-            self.lendables.filter(user=user).count() == 0)
+        return (
+            self.lendables.count() < self.max_checked_out and
+            self.lendables.filter(user=user).count() == 0
+        )
 
     @classmethod
     def next_available_date(self):
