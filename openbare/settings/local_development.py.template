@@ -39,6 +39,10 @@ LOGGING = {
     },
 }
 
+MAX_RENEWALS = {
+    'amazondemoaccount': 2
+}
+
 # AWS Credentials
 # You may have some in ~/.aws/credentials
 
