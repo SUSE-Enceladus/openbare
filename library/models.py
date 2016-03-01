@@ -24,6 +24,7 @@ class Lendable(models.Model):
     type = models.CharField(max_length=254)
     checked_out_on = models.DateTimeField(auto_now_add=True)
     due_on = models.DateTimeField()
+    notify_timer = models.FloatField(null=True)
     renewals = models.IntegerField(default=0)
     user = models.ForeignKey(User)
     credentials = None

@@ -43,6 +43,10 @@ MAX_RENEWALS = {
     'amazondemoaccount': 2
 }
 
+# Number of days prior to due date when user is notified via email.
+EXPIRATION_NOTIFICATION_WARNING_DAYS = [1]
+
+
 # AWS Credentials
 # You may have some in ~/.aws/credentials
 
