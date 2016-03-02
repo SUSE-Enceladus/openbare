@@ -1,12 +1,14 @@
+from django.conf import settings
 from django.contrib import messages
-from django.http import HttpResponse
+from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
+from django.core.mail import send_mail
+from django.core.urlresolvers import reverse
+from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render, render_to_response
 from django.template.context import RequestContext
-from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
-from django.http import Http404
 
 from library.templatetags import formatting_filters
-from .models import *
+from library.models import *
 
 
 def index(request):
@@ -15,6 +17,7 @@ def index(request):
         'user': request.user,
         'resources': get_lendable_resources(request.user),
         'user_items': get_items_checked_out_by(request.user),
+        'admin_emails': _admin_emails(),
         'checkout': False
     })
     return render_to_response('library/home.html', context_instance=context)
@@ -41,6 +44,7 @@ def checkout(request, item_subtype):
             'user': request.user,
             'resources': get_lendable_resources(request.user),
             'user_items': get_items_checked_out_by(request.user),
+            'admin_emails': _admin_emails(),
             'checkout': True,
             'checkout_title': item.name,
             'checkout_credentials': item.credentials
@@ -68,6 +72,44 @@ def renew(request, primary_key):
             request,
             "'%s' is now due on %s." %
             (item.name, formatting_filters.format_date(item.due_on))
+        )
+    return redirect(index)
+
+
+def request_extension(request, primary_key):
+    _verify_user(request.user)
+
+    item = get_object_or_404(
+        Lendable.all_types,
+        pk=primary_key,
+        user=request.user
+    )
+
+    admin_path_for_lendable = reverse(
+        'admin:library_lendable_change',
+        args=(primary_key,)
+    )
+    host = request.get_host()
+    protocol = (request.is_secure() and 'https' or 'http')
+    admin_url_for_lendable = protocol + '://' + host + admin_path_for_lendable
+    try:
+        send_mail(
+            'openbare: request to extend due_date of PK#%s' % primary_key,
+            'Message from %s:\n%s\n\n%s' % (
+                request.user.username,
+                request.POST['message'],
+                admin_url_for_lendable
+            ),
+            request.user.email,
+            _admin_emails()
+        )
+    except Exception as e:
+        messages.error(request, e)
+    else:
+        messages.success(
+            request,
+            'Your request was sent to the openbare Admins' +
+            ' and will be evaluated.'
         )
     return redirect(index)
 
@@ -119,3 +161,5 @@ def _verify_user(user=None):
     if (not user or user.is_anonymous()):
         raise Http404
 
+def _admin_emails():
+    return ["%s <%s>" % (admin[0], admin[1]) for admin in settings.ADMINS]

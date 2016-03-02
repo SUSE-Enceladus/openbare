@@ -16,9 +16,9 @@ dl > dd {
 
 /* Provide a horizontal list of links in the footer */
 .footer li {
-	float: left;
-	margin-right: 1.5em;
-	margin-bottom: 1.5em;
+    float: left;
+    margin-right: 1.5em;
+    margin-bottom: 1.5em;
 }
 
 /* Right-aligned items need a reversed margin */
@@ -30,5 +30,13 @@ dl > dd {
 /* FontAwesome icons in the header need to be colored to match */
 .navbar i {
     color: #FFF;
+}
+
+.table > tbody > tr > td:first-of-type {
+    padding-left: 0;
+}
+
+.table > tbody > tr > td:last-of-type {
+    padding-right: 0;
 }
 

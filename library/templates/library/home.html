@@ -61,8 +61,7 @@
               <thead>
                 <tr>
                   <th>Resource</th>
-                  <th>Due date</th>
-                  <th></th>
+                  <th colspan=3>Due date</th>
                 </tr>
               </thead>
               <tbody>
@@ -73,8 +72,12 @@
                   </td>
                   <td>
                     {{ checked_out_item.due_on|format_date }}
+                  </td>
+                  <td>
                     {% if checked_out_item.is_renewable %}
                       <a href="{%url 'library:renew' checked_out_item.pk %}" role="button" class="btn btn-default btn-xs">Renew</a>
+                    {% else %}
+                      <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#item_{{ checked_out_item.pk }}_request_extension">Request<br>Extension</button>
                     {% endif %}
                   </td>
                   <td>
@@ -140,6 +143,37 @@
     {% endfor %}
 
     {% for checked_out_item in user_items %}
+      <div class="modal fade" id="item_{{ checked_out_item.pk }}_request_extension" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <form action="{%url 'library:request_extension' checked_out_item.pk %}" method="POST">
+              {% csrf_token %}
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">
+                  {{ checked_out_item }} - request extension
+                </h4>
+              </div>
+              <div class="modal-body">
+                <p>
+                  If you need to keep this resource beyond the due date, you may
+                  request an extension from the Administrators.
+                </p>
+                <p>
+                  Please explain your request here:
+                </p>
+                <textarea name="message" class="form-control" rows="5"></textarea>
+              </div>
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Send</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+
+
       <div class="modal fade" id="item_{{ checked_out_item.pk }}_details" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
           <div class="modal-content">
