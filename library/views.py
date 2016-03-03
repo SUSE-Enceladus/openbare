@@ -89,9 +89,7 @@ def request_extension(request, primary_key):
         'admin:library_lendable_change',
         args=(primary_key,)
     )
-    host = request.get_host()
-    protocol = (request.is_secure() and 'https' or 'http')
-    admin_url_for_lendable = protocol + '://' + host + admin_path_for_lendable
+    admin_url_for_lendable = settings.PRIMARY_URL + admin_path_for_lendable
     try:
         send_mail(
             'openbare: request to extend due_date of PK#%s' % primary_key,

@@ -18,6 +18,8 @@
 import os
 from datetime import datetime
 import django
+from django.core.mail import send_mail
+import logging
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "openbare.settings")
 django.setup()
@@ -31,6 +33,29 @@ def checkin_expired_accounts():
         lendable.checkin()
 
 
+def get_warning_message(lendable):
+    return """
+Hi %(firstname)!
+
+You have an item checked out via openbare that's going to expire soon.
+
+'%(lendable)' is due on '%(due_date)'. Unless you renew it or request an
+extension, the item will automatically be returned, and we'll clean up any
+mess you left.
+
+If you'd like to take some action, you can visit openbare at:
+%(primary_url)
+
+Have a great day!
+- Your openbare Admins
+""" % {
+            'firstname': lendable.user.firstname,
+            'lendable': lendable.__str__(),
+            'due_date': lendable.due_date(),
+            'primary_url': settings.PRIMARY_URL,
+        }
+
+
 def notify_user():
     now = datetime.now(django.utils.timezone.UTC())
     for days in django.settings.EXPIRATION_NOTIFICATION_WARNING_DAYS:
@@ -42,11 +67,35 @@ def notify_user():
             )
         )
         for lendable in lendables:
-            # send_an_email()
-            delta = (lendable.due_on - now)
-            # 86400 seconds/day - timedelta as float of days
-            lendable.notify_timer = delta.days + delta.seconds / 86400
-            lendable.save()
+            try:
+                send_mail(
+                    'Expiration warning',
+                    get_warning_message(lendable),
+                    'openbare-admins@susecloud.net',
+                    lendable.user.email
+                )
+            except Exception as e:
+                logging.error(e)
+            else:
+                delta = (lendable.due_on - now)
+                # 86400 seconds/day - timedelta as float of days
+                lendable.notify_timer = delta.days + delta.seconds / 86400
+                lendable.save()
 
+
+def start_logging():
+    """Set up logging"""
+    log_filename = '/var/log/openbare_user_monitor'
+    try:
+        logging.basicConfig(
+            filename=log_filename,
+            level=logging.INFO,
+            format='%(asctime)s %(levelname)s:%(message)s'
+        )
+    except IOError:
+        print 'Could not open log file ', logFile, ' for writing.'
+        sys.exit(1)
+
+start_logging()
 checkin_expired_accounts()
 notify_user()
