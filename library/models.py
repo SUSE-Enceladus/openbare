@@ -24,6 +24,7 @@ class Lendable(models.Model):
     type = models.CharField(max_length=254)
     checked_out_on = models.DateTimeField(auto_now_add=True)
     due_on = models.DateTimeField()
+    notify_timer = models.FloatField(null=True)
     renewals = models.IntegerField(default=0)
     user = models.ForeignKey(User)
     credentials = None
@@ -61,8 +62,10 @@ class Lendable(models.Model):
 
     @classmethod
     def is_available_for_user(self, user):
-        return (self.lendables.count() < self.max_checked_out and
-            self.lendables.filter(user=user).count() == 0)
+        return (
+            self.lendables.count() < self.max_checked_out and
+            self.lendables.filter(user=user).count() == 0
+        )
 
     @classmethod
     def next_available_date(self):

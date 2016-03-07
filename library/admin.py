@@ -4,7 +4,7 @@ from library.models import Lendable
 
 
 class LendableAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('pk', '__str__')
 
 
 admin.site.register(Lendable, LendableAdmin)
