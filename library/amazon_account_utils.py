@@ -1,4 +1,4 @@
-# Copyright © 2015 SUSE LLC, James Mason <jmason@suse.com>.
+# Copyright © 2016 SUSE LLC, James Mason <jmason@suse.com>.
 #
 # This file is part of SUSE openbare.
 #
