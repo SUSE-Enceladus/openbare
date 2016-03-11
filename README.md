@@ -1,7 +1,7 @@
 Django Library System - openbare
 =================================================
 
-openbare is a Library System for Django.
+openbare is a digital asset library system, implemented on Django.
 
 The system started out with the intend to provide access to Public Cloud
 accounts for everyone at SUSE. At the onset of the project is was hoped that
