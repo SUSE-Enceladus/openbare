@@ -1,4 +1,7 @@
-# Copyright © 2016 SUSE LLC, James Mason <jmason@suse.com>.
+#!/usr/bin/env python
+#
+# Copyright © 2016 SUSE LLC, Robert Schweikert <rjschwei@suse.com>,
+# James Mason <jmason@suse.com>.
 #
 # This file is part of SUSE openbare.
 #
