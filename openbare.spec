@@ -63,6 +63,6 @@ project in a company independent way.
 %attr(-, wwwrun, www) /srv/www/%{name}
 %attr(0750, root, root) /usr/sbin/openbare-manage
 %attr(0750, root, root) /usr/sbin/openbare-user-monitor
-%dir /etc/%{name}
+%config(noreplace) /etc/%{name}
 
 %changelog

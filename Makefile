@@ -23,3 +23,4 @@ install:
 	cp tools/* $(DESTDIR)$(PREFIX)/sbin/
 	# config
 	mkdir -p $(DESTDIR)/etc/$(NAME)
+	cp production-setting-templates/* $(DESTDIR)/etc/$(NAME)/
