@@ -1,4 +1,8 @@
-# Copyright © 2016 SUSE LLC, James Mason <jmason@suse.com>.
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Copyright © 2016 SUSE LLC, Robert Schweikert <rjschwei@suse.com>,
+# James Mason <jmason@suse.com>.
 #
 # This file is part of SUSE openbare.
 #
@@ -16,10 +20,13 @@
 # along with openbare. If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import sys
 from datetime import datetime
 import django
 from django.core.mail import send_mail
 import logging
+
+sys.path.append('/srv/www/openbare')
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "openbare.settings")
 django.setup()

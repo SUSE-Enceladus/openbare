@@ -1,0 +1,8 @@
+# AWS Credentials
+#
+# You may have some in ~/.aws/credentials
+#
+# Used by openbare.library.amazon_account_utils
+
+AWS_ACCESS_KEY_ID = ''
+AWS_SECRET_ACCESS_KEY = ''
