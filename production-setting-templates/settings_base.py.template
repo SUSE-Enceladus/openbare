@@ -15,14 +15,25 @@
 # You should have received a copy of the GNU General Public License
 # along with openbare. If not, see <http://www.gnu.org/licenses/>.
 
-# AWS Credentials
-#
-# You may have some in ~/.aws/credentials
-#
-# Used by openbare.library.amazon_account_utils
+# What's the URL of your openbare site?
+PRIMARY_URL='https://openbare.yourdomain.com'
 
-# Amazon Web Services API credentials for openbare application actor
-AWS_ACCESS_KEY_ID = ''
-AWS_SECRET_ACCESS_KEY = ''
-# When IAM users are created, they will be automatically joined to a group
-AWS_IAM_GROUP = ''
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = False
+
+# Who gets emailed about adminstrative issues?
+ADMINS = [
+    ('Adminstrator', 'openbare-admin@yourdomain.com'),
+    ('Backup Administrator', 'openbare-admin-pool@yourdomain.com')
+]
+
+# How many renewals are allowed with each plugin?
+# Specify the plugin type, from library/models, and the number of renewals.
+MAX_RENEWALS = {
+    'amazondemoaccount': 2
+}
+
+# Number of days prior to due date when user is notified via email.
+# For example, send notifications 5 days, two days, and the day before due.
+EXPIRATION_NOTIFICATION_WARNING_DAYS = [5, 2, 1]
+
