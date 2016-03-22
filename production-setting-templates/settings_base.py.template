@@ -15,5 +15,25 @@
 # You should have received a copy of the GNU General Public License
 # along with openbare. If not, see <http://www.gnu.org/licenses/>.
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'INSERT_SOME_SECRET_RANDOM_STRING_HERE'
+# What's the URL of your openbare site?
+PRIMARY_URL='https://openbare.yourdomain.com'
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = False
+
+# Who gets emailed about adminstrative issues?
+ADMINS = [
+    ('Adminstrator', 'openbare-admin@yourdomain.com'),
+    ('Backup Administrator', 'openbare-admin-pool@yourdomain.com')
+]
+
+# How many renewals are allowed with each plugin?
+# Specify the plugin type, from library/models, and the number of renewals.
+MAX_RENEWALS = {
+    'amazondemoaccount': 2
+}
+
+# Number of days prior to due date when user is notified via email.
+# For example, send notifications 5 days, two days, and the day before due.
+EXPIRATION_NOTIFICATION_WARNING_DAYS = [5, 2, 1]
+
