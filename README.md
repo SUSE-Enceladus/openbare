@@ -33,6 +33,7 @@ For openSUSE and SUSE Linux Enterprise
 *   Add a repository from OBS
     [devel:languages:python3](https://build.opensuse.org/project/show/devel:languages:python3)
     appropriate for your distribution to your system.
+
 *   Install all dependencies
     ```
     zypper in python3-Django python3-python-social-auth \
