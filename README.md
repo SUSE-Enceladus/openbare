@@ -22,7 +22,6 @@ Prerequisites
 * python > 3.2
 * Django ~ 1.8.4
 * python-social-auth
-  ** **WARNING**: we are subject to https://github.com/omab/python-social-auth/issues/617
 * django-debug-toolbar
 * django-markdown-deux
 * django-split-settings
