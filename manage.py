@@ -2,7 +2,7 @@
 #
 # Copyright © 2016 SUSE LLC, James Mason <jmason@suse.com>.
 #
-# This file is part of SUSE openbare.
+# This file is part of openbare.
 #
 # openbare is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
