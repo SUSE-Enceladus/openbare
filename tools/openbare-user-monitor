@@ -23,7 +23,9 @@ import os
 import sys
 from datetime import datetime
 import django
+from django.conf import settings
 from django.core.mail import send_mail
+from django.db.models import Q
 import logging
 
 sys.path.append('/srv/www/openbare')
@@ -32,7 +34,6 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "openbare.settings")
 django.setup()
 
 from library.models import *
-
 
 def checkin_expired_accounts():
     now = datetime.now(django.utils.timezone.UTC())
@@ -65,8 +66,8 @@ Have a great day!
 
 def notify_user():
     now = datetime.now(django.utils.timezone.UTC())
-    for days in django.settings.EXPIRATION_NOTIFICATION_WARNING_DAYS:
-        lendables = Lendable.all_types.get(
+    for days in settings.EXPIRATION_NOTIFICATION_WARNING_DAYS:
+        lendables = Lendable.all_types.filter(
             Q(due_on__lte=now + timedelta(days)) &
             (
                 Q(notify_timer=None) |
@@ -100,7 +101,7 @@ def start_logging():
             format='%(asctime)s %(levelname)s:%(message)s'
         )
     except IOError:
-        print 'Could not open log file ', logFile, ' for writing.'
+        print('Could not open log file %s for writing.' % log_filename)
         sys.exit(1)
 
 start_logging()
