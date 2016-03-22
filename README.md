@@ -30,9 +30,15 @@ Prerequisites
 
 For openSUSE and SUSE Linux Enterprise
 --------------------------------------
-* Add a repository from OBS [devel:languages:python3](https://build.opensuse.org/project/show/devel:languages:python3) appropriate for your distribution to your system
-* `zypper in python3-Django python3-python-social-auth python3-django-debug-toolbar python3-django-markdown-deux python3-django-split-settings python3-boto3`
-
+*   Add a repository from OBS
+    [devel:languages:python3](https://build.opensuse.org/project/show/devel:languages:python3)
+    appropriate for your distribution to your system.
+*   Install all dependencies
+    ```
+    zypper in python3-Django python3-python-social-auth \
+      python3-django-debug-toolbar python3-django-markdown-deux \
+      python3-django-split-settings python3-boto3
+    ```
 
 Initializing your development environment
 -----------------------------------------
@@ -45,7 +51,7 @@ Initializing your development environment
 1.  Create your local settings
     ```
     cp openbare/settings/local_development.py.template \
-    openbare/settings/local_development.py
+      openbare/settings/local_development.py
     edit openbare/settings/local_development.py
     ```
 
