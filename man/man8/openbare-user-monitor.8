@@ -1,0 +1,46 @@
+.\" Process this file with
+.\" groff -man -Tascii openbare-user-monitor.8
+.\"
+.TH openbare-user-monitor "8" "21 Mar 2016" "openbare" "Support Utilities Manual"
+.SH NAME
+openbare-user-monitor \- perform actions based on upcoming due dates
+
+.SH SYNOPSIS
+.B openbare-user-monitor
+
+.SH DESCRIPTION
+.B openbare-user-monitor
+sends notification emails to
+.B openbare
+users when due dates are approaching, and automatically checks items in when
+a due date has passed.
+
+Typically,
+.B openbare-user-monitor
+is run as a scheduled task, e.g. cron, at least once daily.
+
+.SH FILES
+.I /etc/openbare/settings_base.py
+.RS
+The
+.I EXPIRATION_NOTIFICATION_WARNING_DAYS
+setting defines when users are notified, as a list of days until an item is due.
+
+.SH EXAMPLE
+.EX
+EXPIRATION_NOTIFICATION_WARNING_DAYS=[5, 2, 1]
+.EE
+
+Notification emails would be sent the first time the script is run within five
+days, two days, and one day before an item is due.
+
+.SH AUTHOR
+James Mason <jmason@suse.com>
+.SH REPORTING BUGS
+Please submit bugs, fixes, or enhancement requests via:
+.UR https://github.com/openbare/openbare/issues
+.UE
+
+.SH SEE ALSO
+.BR openbare-manage (8)
+

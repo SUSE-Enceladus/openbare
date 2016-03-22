@@ -1,0 +1,33 @@
+.\" Process this file with
+.\" groff -man -Tascii openbare-manage.8
+.\"
+.TH openbare-manage "8" "21 Mar 2016" "openbare" "Support Utilities Manual"
+.SH NAME
+openbare-manage \- Django management script for openbare
+
+.SH SYNOPSIS
+.B openbare-manage [django-admin-command]
+
+.SH DESCRIPTION
+.B openbare-manage
+provides access to
+.I django-admin
+commands within the scope of the
+.B openbare
+application.
+
+For information about the functions provided by
+.IR django-admin ,
+see
+.UR https://docs.djangoproject.com/en/1.9/ref/django-admin/
+.UE .
+
+.SH AUTHOR
+James Mason <jmason@suse.com>
+.SH REPORTING BUGS
+Please submit bugs, fixes, or enhancement requests via:
+.UR https://github.com/openbare/openbare/issues
+.UE
+
+.SH SEE ALSO
+.BR openbare-user-monitor (8)

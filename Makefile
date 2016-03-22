@@ -1,6 +1,7 @@
 DESTDIR=
 PREFIX=/usr
 NAME=openbare
+MANPATH=$(PREFIX)/share/man
 
 .PHONY: clean tar install
 
@@ -24,3 +25,7 @@ install:
 	# config
 	mkdir -p $(DESTDIR)/etc/$(NAME)
 	cp production-setting-templates/* $(DESTDIR)/etc/$(NAME)/
+	# manpages
+	mkdir -p $(DESTDIR)/$(MANPATH)/man8
+	cp man/man8/*.8 $(DESTDIR)/$(MANPATH)/man8/
+	gzip $(DESTDIR)/$(MANPATH)/man8/*.8
