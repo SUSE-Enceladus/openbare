@@ -16,8 +16,8 @@ We'd like to thank SUSE for sponsoring our work and enabling us to set up the
 project in a company independent way.
 
 
-Prerequisites
--------------
+Dependencies
+------------
 
 * python > 3.2
 * Django ~ 1.8.4
@@ -76,6 +76,82 @@ Initializing your development environment
   3.  Click 'Add resource'
   4.  Fill out the form, and click 'Save'
 
+
+Setting up a production instance with Apache and Postrgres on SLES 12 SP1
+-------------------------------------------------------------------------
+
+1.  As root...
+    ```
+    sudo -i
+    ```
+
+1.  Install Apache and Postgresql
+    ```
+    zypper ar --refresh http://download.opensuse.org/repositories/devel:/languages:/python3/SLE_12_SP1/devel:languages:python3.repo
+    zypper ar --refresh http://download.opensuse.org/repositories/Apache:/Modules/SLE_12_SP1/Apache:Modules.repo
+    zypper in apache apache2-mod_wsgi-python3 postgresql94-server python3-psycopg2
+    ```
+
+1.  Install openbare
+    ```
+    # temporary home of openbare
+    zypper in --no-recommends http://download.opensuse.org/repositories/home:/bear454/SLE_12_SP1/noarch/openbare-0.2.0-1.1.noarch.rpm
+    ```
+
+1.  Setup Postgresql
+    ```
+    systemctl enable postgresql
+    systemctl start postgresql
+    su - postgres
+    createdb openbare
+    psql
+    CREATE ROLE openbare WITH PASSWORD "[secret-database-password]";
+    ALTER ROLE openbare WITH LOGIN;
+    CREATE DATABASE openbare WITH OWNER openbare;
+    GRANT ALL PRIVILEGES ON DATABASE openbare TO openbare;
+    \q
+    logout
+    ```
+
+1.  Setup Apache
+    ```
+    edit /etc/sysconfig/apache2 # add 'wsgi' to APACHE_MODULES
+    # verify
+    apachectl -M | grep wsgi
+    # create a new config
+    mv /etc/apache2/default-server.conf /etc/apache2/default-server.conf.orig
+    echo "
+    Alias /static/ /srv/www/openbare/static/
+
+    <Directory /srv/www/openbare/static>
+    Require all granted
+    Options FollowSymLinks
+    </Directory>
+
+    WSGIScriptAlias / /srv/www/openbare/openbare/wsgi.py
+    WSGIPythonPath /srv/www/openbare
+
+    <Directory /srv/www/openbare>
+    <Files wsgi.py>
+    Require all granted
+    </Files>
+    </Directory>
+    " > /etc/apache2/default-server.conf
+    systemctl enable apache2
+    ```
+
+1.  Configure openbare
+    ```
+    for file in /etc/openbare/settings_*.py.template; do cp "$file" "${file%.template}"; done
+    edit /etc/openbare/settings_*.py
+    openbare-manage migrate
+    openbare-manage createsuperuser
+    ```
+
+1.  Start Apache!
+    ```
+    systemctl start apache2
+    ```
 
 Useful Links
 ------------

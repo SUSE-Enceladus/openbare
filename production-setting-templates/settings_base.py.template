@@ -18,6 +18,10 @@
 # What's the URL of your openbare site?
 PRIMARY_URL='https://openbare.yourdomain.com'
 
+# List of all domains where openbare should run
+# See https://docs.djangoproject.com/en/1.9/ref/settings/#allowed-hosts
+ALLOWED_HOSTS = ['openbare.yourdomain.com']
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
