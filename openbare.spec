@@ -16,7 +16,7 @@
 #
 
 Name:           openbare
-Version:        0.3.0
+Version:        0.3.1
 Release:        0
 Summary:        A digital asset library system, implemented on Django
 License:        GPL-3.0
