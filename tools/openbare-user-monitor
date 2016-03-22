@@ -43,25 +43,25 @@ def checkin_expired_accounts():
 
 def get_warning_message(lendable):
     return """
-Hi %(firstname)!
+Hi {firstname}!
 
 You have an item checked out via openbare that's going to expire soon.
 
-'%(lendable)' is due on '%(due_date)'. Unless you renew it or request an
+'{lendable}' is due on '{due_on}'. Unless you renew it or request an
 extension, the item will automatically be returned, and we'll clean up any
 mess you left.
 
 If you'd like to take some action, you can visit openbare at:
-%(primary_url)
+{primary_url}
 
 Have a great day!
 - Your openbare Admins
-""" % {
-            'firstname': lendable.user.firstname,
-            'lendable': lendable.__str__(),
-            'due_date': lendable.due_date(),
-            'primary_url': settings.PRIMARY_URL,
-        }
+""".format(
+        firstname=lendable.user.first_name,
+        lendable=lendable,
+        due_on=lendable.due_on,
+        primary_url=settings.PRIMARY_URL
+    )
 
 
 def notify_user():
@@ -79,8 +79,8 @@ def notify_user():
                 send_mail(
                     'Expiration warning',
                     get_warning_message(lendable),
-                    'openbare-admins@susecloud.net',
-                    lendable.user.email
+                    "%s <%s>" % (settings.ADMINS[0][0], settings.ADMINS[0][1]),
+                    [lendable.user.email]
                 )
             except Exception as e:
                 logging.error(e)
@@ -93,7 +93,7 @@ def notify_user():
 
 def start_logging():
     """Set up logging"""
-    log_filename = '/var/log/openbare_user_monitor'
+    log_filename = '/var/log/openbare-user-monitor.log'
     try:
         logging.basicConfig(
             filename=log_filename,
