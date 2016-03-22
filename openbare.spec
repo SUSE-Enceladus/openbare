@@ -64,5 +64,6 @@ project in a company independent way.
 %attr(0750, root, root) /usr/sbin/openbare-manage
 %attr(0750, root, root) /usr/sbin/openbare-user-monitor
 %config(noreplace) /etc/%{name}
+%{_mandir}/man*/*
 
 %changelog
