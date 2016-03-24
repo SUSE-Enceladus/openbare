@@ -16,16 +16,22 @@
 # along with openbare. If not, see <http://www.gnu.org/licenses/>.
 
 # What's the URL of your openbare site?
+# This is the URL that will be included in email notifications.
+# Be aware of the protocol!
 PRIMARY_URL='https://openbare.yourdomain.com'
 
 # List of all domains where openbare should run
 # See https://docs.djangoproject.com/en/1.9/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ['openbare.yourdomain.com']
 
+# What address will error mails be sent from?
+SERVER_EMAIL = 'server@' + ALLOWED_HOSTS[0]
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
 # Who gets emailed about adminstrative issues?
+# in the form (name, address)
 ADMINS = [
     ('Adminstrator', 'openbare-admin@yourdomain.com'),
     ('Backup Administrator', 'openbare-admin-pool@yourdomain.com')

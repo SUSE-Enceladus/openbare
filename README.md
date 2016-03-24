@@ -121,16 +121,23 @@ Setting up a production instance with Apache and Postrgres on SLES 12 SP1
     # create a new config
     mv /etc/apache2/default-server.conf /etc/apache2/default-server.conf.orig
     echo "
-    Alias /static/ /srv/www/openbare/static/
-
+    # Static Assets
+    ## directly serve admin assets from the django module
+    Alias /static/admin /usr/lib/python3.4/site-packages/django/contrib/admin/static/admin
+    ## directly serve openbare's assets
+    Alias /static /srv/www/openbare/static
+    <Directory /usr/lib/python3.4/site-packages/django/contrib/admin/static/admin>
+    Require all granted
+    Options FollowSymLinks
+    </Directory>
     <Directory /srv/www/openbare/static>
     Require all granted
     Options FollowSymLinks
     </Directory>
 
+    # Setup WSGI server
     WSGIScriptAlias / /srv/www/openbare/openbare/wsgi.py
     WSGIPythonPath /srv/www/openbare
-
     <Directory /srv/www/openbare>
     <Files wsgi.py>
     Require all granted
