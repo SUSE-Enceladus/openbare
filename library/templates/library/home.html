@@ -29,7 +29,9 @@
     </p>
     {% if not user or user.is_anonymous %}
     <p>
-      <a class="btn btn-success btn-lg" href="{% url 'social:begin' 'opensuse' %}?next={{ request.path }}">Log in</a>
+      {% for backend in backends.backends %}
+        <a class="btn btn-success btn-lg" href="{% url 'social:begin' backend %}?next={{ request.path }}">Login via {{ backend }}</a>
+      {% endfor %}
     </p>
     {% endif %}
   </div>

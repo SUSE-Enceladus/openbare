@@ -37,3 +37,8 @@ ADMINS = [
     ('Backup Administrator', 'openbare-admin-pool@yourdomain.com')
 ]
 
+# Which python-social-auth backends do you use for authentication?
+# Backend list: http://psa.matiasaguirre.net/docs/backends/index.html
+AUTHENTICATION_BACKENDS += (
+    'social.backends.suse.OpenSUSEOpenId',
+)

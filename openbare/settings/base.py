@@ -110,7 +110,6 @@ STATICFILES_DIRS = (
 # python-social-auth
 
 AUTHENTICATION_BACKENDS = (
-    'social.backends.suse.OpenSUSEOpenId',
     'django.contrib.auth.backends.ModelBackend',
 )
 
