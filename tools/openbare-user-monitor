@@ -38,7 +38,12 @@ from library.models import *
 def checkin_expired_accounts():
     now = datetime.now(django.utils.timezone.UTC())
     for lendable in Lendable.all_types.filter(due_on__lte=now):
-        lendable.checkin()
+        try:
+            lendable.checkin()
+        except Exception as e:
+            logging.error(e)
+        else:
+            lendable.delete()
 
 
 def get_warning_message(lendable):
