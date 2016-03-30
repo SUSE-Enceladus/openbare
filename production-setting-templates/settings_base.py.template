@@ -37,6 +37,17 @@ ADMINS = [
     ('Backup Administrator', 'openbare-admin-pool@yourdomain.com')
 ]
 
+# Text information about the entity hosting this openbare instance
+#   name              => name to display as the host
+#   url               => the name will be linked here
+#   payment_statement => A brief text explanation of how costs are handled.
+#                        (optional)
+HOST = {
+    'name': '',
+    'url': '',
+    'payment_statement': ''''''
+}
+
 # Which python-social-auth backends do you use for authentication?
 # Backend list: http://psa.matiasaguirre.net/docs/backends/index.html
 AUTHENTICATION_BACKENDS += (

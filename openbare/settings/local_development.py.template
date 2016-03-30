@@ -63,6 +63,17 @@ MAX_RENEWALS = {
     'amazondemoaccount': 2
 }
 
+# text information about the entity hosting this openbare instance
+HOST = {
+    'name': 'openbare developers',
+    'url': 'https://github.com/openbare/openbare',
+    'payment_statement': '''
+        All charges incurred on public cloud accounts are billed through
+        the developer's accounts. Be nice.
+    '''
+}
+
+
 # Number of days prior to due date when user is notified via email.
 EXPIRATION_NOTIFICATION_WARNING_DAYS = [1]
 
