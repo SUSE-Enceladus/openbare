@@ -257,11 +257,16 @@
                 {% endfor %}
               </dl>
               <p>
-                Be sure to record these before closing this dialog, they cannot be presented again.
+                Be sure to
+                <a href="data:application/json;base64,{{ download_credentials_payload }}" target="_blank" download="{{ download_credentials_filename }}">
+                  download
+                </a>
+                or otherwise record these before closing this dialog, they cannot be presented again.
                 If you lose these credentials, you will have to return this item, and checkout the resource again.
               </p>
             </div>
             <div class="modal-footer">
+              <a href="data:application/json;base64,{{ download_credentials_payload }}" target="_blank" download="{{ download_credentials_filename }}" role="button" class="btn btn-default">Download Credentials</a>
             </div>
           </div>
         </div>

@@ -23,6 +23,10 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render, render_to_response
 from django.template.context import RequestContext
+from django.template.defaultfilters import slugify
+
+import base64
+import json
 
 from library.templatetags import formatting_filters
 from library.models import *
@@ -64,7 +68,9 @@ def checkout(request, item_subtype):
             'admin_emails': _admin_emails(),
             'checkout': True,
             'checkout_title': item.name,
-            'checkout_credentials': item.credentials
+            'checkout_credentials': item.credentials,
+            'download_credentials_payload': _pack_up(item.credentials),
+            'download_credentials_filename': _credentials_filename(item)
         }
         context = RequestContext(request, context_dict)
         return render_to_response(
@@ -178,3 +184,18 @@ def _verify_user(user=None):
 
 def _admin_emails():
     return ["%s <%s>" % (admin[0], admin[1]) for admin in settings.ADMINS]
+
+def _pack_up(credentials):
+    return base64.urlsafe_b64encode(
+        bytes(json.dumps(credentials), encoding="UTF-8")
+    )
+
+def _credentials_filename(item):
+    return slugify(
+        '-'.join([
+            "openbare",
+            "credentials",
+            str(item.pk),
+            item.name
+        ])
+    ) + ".json"
