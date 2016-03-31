@@ -45,7 +45,7 @@
   <body>
     <!-- Header (navigation bar) -->
     <nav class="navbar navbar-default">
-      <div class="container-fluid">
+      <div class="container">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
             <span class="sr-only">Toggle navigation</span>
@@ -83,15 +83,13 @@
       {% block main %}{% endblock %}
       <!-- Footer -->
       <div class="footer">
-        <div class="row">
-          <div class="col-12">
-            <ul class="list-unstyled">
-              <li class="pull-right"><a href="#top">Back to top</a></li>
-              <li>Copyright &copy; 2015 SUSE</li>
-              <li><a data-toggle="modal" data-target="#credits-modal">Attributions</a></li>
-            </ul>
+        <nav class="navbar navbar-default navbar-fixed-bottom">
+          <div class="container">
+            <p class="navbar-text">Copyright &copy; 2016 SUSE</p>
+            <p class="navbar-text"><a href="#" class="navbar-link" data-toggle="modal" data-target="#credits-modal">Attributions</a></p>
+            <p class="navbar-text navbar-right"><a href="#top" class="navbar-link">Back to top</a></p>
           </div>
-        </div>
+        </nav>
       </div>
     </div>
     <!-- Credits Modal -->
