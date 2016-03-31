@@ -36,9 +36,43 @@
     {% endif %}
   </div>
 
+  {% if not user or user.is_anonymous %}
+    <div class="row">
+      <div class="col-md-12">
+        <h2>Welcome!</h2>
+        <dl>
+          <dt>What is <i>openbare</i>?</dt>
+          <dd>
+            <i>openbare</i> is a digital asset library system. Digital assets,
+            such as online accounts, e-books or software subscriptions can be
+            made available for 'check out', similar to physical libraries.
+          </dd>
+          <dt>Who's providing this?</dt>
+          <dd>
+            This openbare instance is operated by
+            <a href="{{ host.url }}" target="_blank">{{ host.name }}</a>.
+            {% if host.payment_statement %}
+              Any costs associated with the digital assets provided through this
+              <i>openbare</i> instance are handled as follows:
+              <blockquote>{{ host.payment_statement }}</blockquote>
+            {% endif %}
+          </dd>
+          <dt>Is <i>openbare</i> open source?</dt>
+          <dd>
+            Yes! <i>openbare</i> is licensed under the GPLv3 license. You may
+            view the source, file any bugs or enhancement requests, or
+            help improve <i>openbare</i> through our github project:
+            <a href="https://github.com/openbare/openbare">https://github.com/openbare/openbare</a>
+          </dd>
+        </dl>
+      </div>
+    </div>
+  {% endif %}
+
+
   {% if user and not user.is_anonymous %}
     <div class="row">
-      <div class="col-md-6">
+      <div class="col-md-12">
         <div class="panel panel-default">
           <div class="panel-heading">
             <h3 class="panel-title">Library resources</h3>
@@ -59,7 +93,7 @@
                   </td>
                   <td>
                     {% if resource.is_available_for_user %}
-                      <a href="{%url 'library:checkout' resource.item_subtype %}" role="button" class="btn btn-default btn-xs">Checkout</a>
+                      <a href="{%url 'library:checkout' resource.item_subtype %}" role="button" class="btn btn-default btn-xs" title="Grant yourself access to this resource for a limited time." data-toggle="tooltip" >Checkout</a>
                     {% else %}
                       Due on {{ resource.next_available_date|format_date }}
                     {% endif %}
@@ -72,7 +106,7 @@
         </div>
       </div>
 
-      <div class="col-md-6">
+      <div class="col-md-12">
         <div class="panel panel-default">
           <div class="panel-heading">
             <h3 class="panel-title">Checked out to me</h3>
@@ -96,13 +130,13 @@
                   </td>
                   <td>
                     {% if checked_out_item.is_renewable %}
-                      <a href="{%url 'library:renew' checked_out_item.pk %}" role="button" class="btn btn-default btn-xs">Renew</a>
+                      <a href="{%url 'library:renew' checked_out_item.pk %}" role="button" class="btn btn-default btn-xs" title="Need more time? Extend the due date." data-toggle="tooltip">Renew</a>
                     {% else %}
-                      <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#item_{{ checked_out_item.pk }}_request_extension">Request<br>Extension</button>
+                      <span title="Need more time? Ask the site admins for an extension" data-toggle="tooltip"><button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#item_{{ checked_out_item.pk }}_request_extension" >Request Extension</button></span>
                     {% endif %}
                   </td>
                   <td>
-                    <a href="{%url 'library:checkin' checked_out_item.pk %}" role="button" class="btn btn-default btn-xs">Return</a>
+                    <a href="{%url 'library:checkin' checked_out_item.pk %}" role="button" class="btn btn-default btn-xs" title="Finished early? Return the resource so it's available to others." data-toggle="tooltip">Return</a>
                   </td>
                 </tr>
               {% endfor %}
@@ -153,7 +187,7 @@
             </div>
             <div class="modal-footer">
               {% if resource.is_available_for_user %}
-                <a href="{%url 'library:checkout' resource.item_subtype %}" role="button" class="btn btn-default">Checkout</a>
+                <a href="{%url 'library:checkout' resource.item_subtype %}" role="button" class="btn btn-default" data-placement="left" title="Grant yourself access to this resource for a limited time." data-toggle="tooltip">Checkout</a>
               {% else %}
                 <button class="btn btn-disabled" data-toggle="tooltip" data-placement="left" title="Not available. Due back on {{ resource.next_available_date|format_date }}.">Checkout</button>
               {% endif %}
@@ -186,7 +220,7 @@
                 <textarea name="message" class="form-control" rows="5"></textarea>
               </div>
               <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">Send</button>
+                <button type="submit" class="btn btn-primary" title="Email your request to the site admins" data-placement="left" data-toggle="tooltip">Send</button>
               </div>
             </form>
           </div>
@@ -218,17 +252,15 @@
                 <dd>
                   {{ checked_out_item.due_on|format_date }}
                 </dd>
-                <dt>Maximum due date:</dt>
-                <dd>
-                  {{ checked_out_item.max_due_date|format_date }}
-                </dd>
               </dl>
             </div>
             <div class="modal-footer">
               {% if checked_out_item.is_renewable %}
-                <a href="{%url 'library:renew' checked_out_item.pk %}" role="button" class="btn btn-default">Renew</a>
+                <a href="{%url 'library:renew' checked_out_item.pk %}" role="button" class="btn btn-default btn-xs" data-placement="left" title="Need more time? Extend the due date." data-toggle="tooltip">Renew</a>
+              {% else %}
+                <span title="Need more time? Ask the site admins for an extension" data-toggle="tooltip"><button type="button" class="btn btn-default btn-xs" data-dismiss="modal" data-toggle="modal" data-target="#item_{{ checked_out_item.pk }}_request_extension" >Request Extension</button></span>
               {% endif %}
-              <a href="{%url 'library:checkin' checked_out_item.pk %}" role="button" class="btn btn-default">Return</a>
+              <a href="{%url 'library:checkin' checked_out_item.pk %}" role="button" class="btn btn-default btn-xs" data-placement="left" title="Finished early? Return the resource so it's available to others." data-toggle="tooltip">Return</a>
             </div>
           </div>
         </div>

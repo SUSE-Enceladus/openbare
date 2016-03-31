@@ -39,7 +39,8 @@ def index(request):
         'resources': get_lendable_resources(request.user),
         'user_items': get_items_checked_out_by(request.user),
         'admin_emails': _admin_emails(),
-        'checkout': False
+        'checkout': False,
+        'host': settings.HOST
     })
     return render_to_response('library/home.html', context_instance=context)
 
