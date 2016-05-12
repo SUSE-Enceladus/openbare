@@ -27,6 +27,7 @@ from django.template.defaultfilters import slugify
 
 import base64
 import json
+import logging
 
 from library.templatetags import formatting_filters
 from library.models import *
@@ -48,12 +49,15 @@ def index(request):
 def checkout(request, item_subtype):
     _verify_user(request.user)
 
+    logger = logging.getLogger('django')
+
     item = Lendable(type=item_subtype, user=request.user)
     try:
         item.checkout()
         item.save()
     except Exception as e:
         messages.error(request, e)
+        logger.exception('%s: %s' % (type(e).__name__, e))
         return redirect(index)
     else:
         messages.success(
