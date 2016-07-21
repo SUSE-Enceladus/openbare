@@ -52,11 +52,14 @@ class AmazonAccountUtils():
         Provides a password of a given length, containing an equal distribution
         of lowercase and uppercase ASCII characters, digits, and puntuation,
         while avoiding ambiguous characters.
+
+        Based on
+        http://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_passwords_account-policy.html#password-policy-details
         '''
         lowercase = 'abcdefghjkmnopqrstuvwxyz' # removed ambiguous 'i', 'l'
         uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ' # removed ambiguous 'I', 'O'
         digits = '23456789' # removed ambiguous '1', '0'
-        punctuation = '!#$%&()*+,-./:;<=>?@[\\]^_{}~' # removed ambiguous '|', quotes
+        punctuation = '!@#$%^&*()_+-=[]{}' # removed ambiguous '|', quotes
         password_set = []
         while len(password_set) < length:
             password_set.append(random.choice(lowercase))
