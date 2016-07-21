@@ -37,15 +37,15 @@ class AmazonAccountUtils():
             prefix = "\t" * depth
 
         if (level == CRITICAL):
-            self.logger.critical(prefix + message)
+            self.logger.critical(prefix + str(message))
         elif (level == ERROR):
-            self.logger.error(prefix + message)
+            self.logger.error(prefix + str(message))
         elif (level == WARNING):
-            self.logger.warning(prefix + message)
+            self.logger.warning(prefix + str(message))
         elif (level == INFO):
-            self.logger.info(prefix + message)
+            self.logger.info(prefix + str(message))
         else:
-            self.logger.debug(prefix + message)
+            self.logger.debug(prefix + str(message))
 
     def _make_password(self, length=12):
         '''
