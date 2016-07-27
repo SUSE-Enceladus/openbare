@@ -59,7 +59,8 @@ class AmazonAccountUtils():
         lowercase = 'abcdefghjkmnopqrstuvwxyz' # removed ambiguous 'i', 'l'
         uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ' # removed ambiguous 'I', 'O'
         digits = '23456789' # removed ambiguous '1', '0'
-        punctuation = '!@#$%^&*()_+-=[]{}' # removed ambiguous '|', quotes
+        # removed ambiguous '|', quotes and illegal special characters
+        punctuation = '!@#$%^&*()_+-=[]{}'
         password_set = []
         while len(password_set) < length:
             password_set.append(random.choice(lowercase))
