@@ -30,7 +30,7 @@
     {% if not user or user.is_anonymous %}
     <p>
       {% for backend in backends.backends %}
-        <a class="btn btn-success btn-lg" href="{% url 'social:begin' backend %}?next={{ request.path }}">Login via {{ backend }}</a>
+        <a class="btn btn-success btn-lg" href="{% url 'social:begin' backend %}?next={{ request.path }}"><i class="fa fa-sign-in"></i>Login via {{ backend }}</a>
       {% endfor %}
     </p>
     {% endif %}
