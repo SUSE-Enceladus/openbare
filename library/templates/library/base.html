@@ -59,11 +59,14 @@
           <ul class="nav navbar-nav">
           </ul>
           <ul class="nav navbar-nav navbar-right">
-            {% if user and not user.is_anonymous %}
+            {% if user and user.is_authenticated %}
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{ user.get_full_name|default:user.username }}<span class="caret"></span></a>
                 <ul class="dropdown-menu" role="menu">
-                  <li><a href="{% url 'auth:logout' %}?next=/">Logout</a></li>
+                  {% if user.is_superuser or user.is_staff %}
+                    <li><a href="/admin"><i class="fa fa-key"></i>Admin Site</a></li>
+                  {% endif %}
+                  <li><a href="{% url 'auth:logout' %}?next=/"><i class="fa fa-sign-out"></i>Logout</a></li>
                 </ul>
               </li>
             {% else %}
