@@ -40,3 +40,6 @@ dl > dd {
     padding-right: 0;
 }
 
+i.fa {
+    padding-right: 1em;
+}
