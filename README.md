@@ -77,6 +77,19 @@ Initializing your development environment
   4.  Fill out the form, and click 'Save'
 
 
+Versions & Releases
+-------------------
+
+*openbare* adherese to Semantic versioning; see http://semver.org/ for details.
+
+[*bumpversion*](https://pypi.python.org/pypi/bumpversion/) is used for release
+version management, and configured in `setup.cfg`:
+
+```
+# bumpversion major|minor|patch
+# git push && git push --tags
+```
+
 Setting up a production instance with Apache and Postrgres on SLES 12 SP1
 -------------------------------------------------------------------------
 
