@@ -70,7 +70,7 @@
   {% endif %}
 
 
-  {% if user and not user.is_anonymous %}
+  {% if user and user.is_authenticated %}
     <div class="row">
       <div class="col-md-12">
         <div class="panel panel-default">
