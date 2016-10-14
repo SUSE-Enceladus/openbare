@@ -57,6 +57,12 @@
               <blockquote>{{ host.payment_statement }}</blockquote>
             {% endif %}
           </dd>
+          {% if host.use_statement %}
+            <dt>Please note the following usage guidelines</dt>
+            <dd>
+            <blockquote>{{ host.use_statement }}</blockquote>
+            </dd>
+          {% endif %}
           <dt>Is <i>openbare</i> open source?</dt>
           <dd>
             Yes! <i>openbare</i> is licensed under the GPLv3 license. You may

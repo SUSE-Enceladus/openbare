@@ -42,10 +42,13 @@ ADMINS = [
 #   url               => the name will be linked here
 #   payment_statement => A brief text explanation of how costs are handled.
 #                        (optional)
+#   use_statement     => Any references to policies and use restrictions.
+#                        (optional)
 HOST = {
     'name': '',
     'url': '',
     'payment_statement': ''''''
+    'use_statement': ''''''
 }
 
 # Which python-social-auth backends do you use for authentication?

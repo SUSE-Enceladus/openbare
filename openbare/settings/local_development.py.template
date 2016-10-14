@@ -71,6 +71,9 @@ HOST = {
         All charges incurred on public cloud accounts are billed through
         the developer's accounts. Be nice.
     '''
+    'use_statement': '''
+        Use at your own risk
+    '''
 }
 
 
