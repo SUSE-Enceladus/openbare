@@ -2,6 +2,19 @@
 Custom rules to supplement bootstrap and theming elements.
 */
 
+/* the fixed bootstrap footer overlaps content without body padding */
+@media (min-width: 768px) {
+    body {
+        padding-bottom: 45px;
+    }
+}
+
+@media (max-width: 767px) {
+    body {
+        padding-bottom: 102px;
+    }
+}
+
 /* provide a background image; esp. for use on Jumbotron */
 .openbare-background {
     background-image: url(/static/images/openbare-inside.jpg);

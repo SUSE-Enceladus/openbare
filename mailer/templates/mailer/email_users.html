@@ -1,0 +1,52 @@
+{% extends "library/base.html" %}
+{% load staticfiles %}
+
+{% comment %}
+# Copyright © 2016 SUSE LLC.
+#
+# This file is part of openbare.
+#
+# openbare is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# openbare is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with openbare. If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+
+{% block main %}
+    <div class="page-header">
+      <h1>Email users</h1>
+    </div>
+
+    <form class="form-horizontal" method="post" id="id_mail_form">
+        {% csrf_token %}
+        {{ form.media }}
+        <div class="col-sm-8">
+            <div class="panel panel-default">
+                <div class="panel-heading">Message</div>
+                <div class="panel-body">
+                    {% include 'mailer/form.html' %}
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-8">
+            <div class="form-group">
+                <div class="col-sm-8">
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirmModal">Send Email</button>
+                </div>
+            </div>
+        </div>
+    </form>
+    {% include 'mailer/modal.html' %}
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'js/mailer.js' %}"></script>
+{% endblock %}
