@@ -21,7 +21,7 @@ from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, Http404
-from django.shortcuts import get_object_or_404, redirect, render, render_to_response
+from django.shortcuts import get_object_or_404, redirect, render
 from django.template.context import RequestContext
 from django.template.defaultfilters import slugify
 
@@ -34,16 +34,14 @@ from library.models import *
 
 
 def index(request):
-    context = RequestContext(request, {
-        'request': request,
-        'user': request.user,
+    context = {
         'resources': get_lendable_resources(request.user),
         'user_items': get_items_checked_out_by(request.user),
         'admin_emails': _admin_emails(),
         'checkout': False,
         'host': settings.HOST
-    })
-    return render_to_response('library/home.html', context_instance=context)
+    }
+    return render(request, 'library/home.html', context=context)
 
 
 def checkout(request, item_subtype):
@@ -65,9 +63,7 @@ def checkout(request, item_subtype):
             "'%s' is checked out to you until %s." %
             (item.name, formatting_filters.format_date(item.due_on))
         )
-        context_dict = {
-            'request': request,
-            'user': request.user,
+        context = {
             'resources': get_lendable_resources(request.user),
             'user_items': get_items_checked_out_by(request.user),
             'admin_emails': _admin_emails(),
@@ -77,11 +73,8 @@ def checkout(request, item_subtype):
             'download_credentials_payload': _pack_up(item.credentials),
             'download_credentials_filename': _credentials_filename(item)
         }
-        context = RequestContext(request, context_dict)
-        return render_to_response(
-            'library/home.html',
-            context_instance=context
-        )
+
+        return render(request, 'library/home.html', context=context)
 
 
 def renew(request, primary_key):
