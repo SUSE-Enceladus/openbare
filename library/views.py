@@ -17,6 +17,7 @@
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
@@ -28,6 +29,7 @@ from django.template.defaultfilters import slugify
 import base64
 import json
 import logging
+import warnings
 
 from library.templatetags import formatting_filters
 from library.models import *
@@ -44,9 +46,8 @@ def index(request):
     return render(request, 'library/home.html', context=context)
 
 
+@login_required(redirect_field_name=None)
 def checkout(request, item_subtype):
-    _verify_user(request.user)
-
     logger = logging.getLogger('django')
 
     item = Lendable(type=item_subtype, user=request.user)
@@ -77,9 +78,8 @@ def checkout(request, item_subtype):
         return render(request, 'library/home.html', context=context)
 
 
+@login_required(redirect_field_name=None)
 def renew(request, primary_key):
-    _verify_user(request.user)
-
     item = get_object_or_404(Lendable.all_types, pk=primary_key, user=request.user)
     try:
         item.renew()
@@ -97,9 +97,8 @@ def renew(request, primary_key):
     return redirect(index)
 
 
+@login_required(redirect_field_name=None)
 def request_extension(request, primary_key):
-    _verify_user(request.user)
-
     item = get_object_or_404(
         Lendable.all_types,
         pk=primary_key,
@@ -133,9 +132,8 @@ def request_extension(request, primary_key):
     return redirect(index)
 
 
+@login_required(redirect_field_name=None)
 def checkin(request, primary_key):
-    _verify_user(request.user)
-
     item = get_object_or_404(Lendable.all_types, pk=primary_key, user=request.user)
     try:
         item.checkin()
@@ -177,6 +175,9 @@ def get_items_checked_out_by(user=None):
 
 
 def _verify_user(user=None):
+    warnings.warn('_verify_user is deprecated and will be removed.'
+                  ' Use login_required instead.', DeprecationWarning)
+
     if (not user or user.is_anonymous()):
         raise Http404
 
