@@ -1,6 +1,6 @@
 """Forms used by the mailer app."""
 
-# Copyright © 2016 SUSE LLC, James Mason <jmason@suse.com>.
+# Copyright © 2016 SUSE LLC.
 #
 # This file is part of openbare.
 #
