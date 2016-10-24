@@ -65,6 +65,7 @@
                 <ul class="dropdown-menu" role="menu">
                   {% if user.is_superuser or user.is_staff %}
                     <li><a href="/admin"><i class="fa fa-key"></i>Admin Site</a></li>
+                    <li><a href="{% url 'mailer:email_users' %}"><i class="fa fa-envelope-o"></i>Email Users</a></li>
                   {% endif %}
                   <li><a href="{% url 'auth:logout' %}?next=/"><i class="fa fa-sign-out"></i>Logout</a></li>
                 </ul>
@@ -128,4 +129,5 @@
     })
     {% block js %}{% endblock %}
   </script>
+  {% block js_include %}{% endblock %}
 </html>

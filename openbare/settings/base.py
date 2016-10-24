@@ -49,6 +49,7 @@ INSTALLED_APPS = (
     'social.apps.django_app.default',
     'markdown_deux',
     'library',
+    'mailer',
 )
 
 MIDDLEWARE_CLASSES = (

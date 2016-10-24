@@ -1,4 +1,6 @@
-# Copyright © 2016 SUSE LLC, James Mason <jmason@suse.com>.
+"""Template tags to check widget type for mailer app."""
+
+# Copyright © 2016 SUSE LLC.
 #
 # This file is part of openbare.
 #
@@ -15,15 +17,18 @@
 # You should have received a copy of the GNU General Public License
 # along with openbare. If not, see <http://www.gnu.org/licenses/>.
 
-from django.conf.urls import include, url
-from django.contrib import admin
-from library.views import index
+from django import forms, template
 
-urlpatterns = [
-    url('', include('django.contrib.auth.urls', namespace='auth')),
-    url('', include('social.apps.django_app.urls', namespace='social')),
-    url(r'^admin/', include(admin.site.urls)),
-    url(r'^library/', include('library.urls', namespace='library')),
-    url(r'^mail/', include('mailer.urls', namespace='mailer')),
-    url(r'^$', index, name='home'),
-]
+register = template.Library()
+
+
+@register.filter
+def is_textarea(field):
+    """Check if instance of Textarea widget."""
+    return isinstance(field.field.widget, forms.Textarea)
+
+
+@register.filter
+def is_dropdown(field):
+    """Check if instance of Select widget."""
+    return isinstance(field.field.widget, forms.Select)
