@@ -24,7 +24,7 @@ Group:          Applications/Internet
 Url:            https://github.com/openbare/openbare
 Source0:        %{name}-%{version}.tar.bz2
 Requires:       python3
-Requires:       python3-Django
+Requires:       python3-Django = 1.10
 Requires:       python3-python-social-auth
 Requires:       python3-django-markdown-deux
 Requires:       python3-django-split-settings
