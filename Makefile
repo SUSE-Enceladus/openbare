@@ -18,7 +18,7 @@ tar:  clean
 install:
 	# django application
 	mkdir -p $(DESTDIR)/srv/www/$(NAME)
-	cp -r library openbare static $(DESTDIR)/srv/www/$(NAME)
+	cp -r library mailer openbare static $(DESTDIR)/srv/www/$(NAME)
 	# management scripts
 	mkdir -p $(DESTDIR)$(PREFIX)/sbin
 	cp tools/* $(DESTDIR)$(PREFIX)/sbin/
