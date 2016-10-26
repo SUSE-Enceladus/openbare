@@ -1,3 +1,5 @@
+"""Views used by library app."""
+
 # Copyright © 2016 SUSE LLC, James Mason <jmason@suse.com>.
 #
 # This file is part of openbare.
@@ -21,9 +23,8 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, Http404
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
-from django.template.context import RequestContext
 from django.template.defaultfilters import slugify
 
 import base64
@@ -31,11 +32,16 @@ import json
 import logging
 import warnings
 
-from library.templatetags import formatting_filters
-from library.models import *
+from .templatetags import formatting_filters
+from .models import Lendable
 
 
 def index(request):
+    """Display the openbare homepage.
+
+    **Template:**
+    :template:`library/home.html`
+    """
     context = {
         'resources': get_lendable_resources(request.user),
         'user_items': get_items_checked_out_by(request.user),
@@ -46,8 +52,27 @@ def index(request):
     return render(request, 'library/home.html', context=context)
 
 
-@login_required(redirect_field_name=None)
+def require_login(request):
+    """Display warning message if user not authenticated.
+
+    If the user manages to trigger a lendable view in an
+    inactive session display a useful message and redirect
+    to the index page.
+    """
+    messages.warning(request, 'Permission denied: You must log in.')
+    return redirect(index)
+
+
+@login_required(redirect_field_name=None, login_url='library:require_login')
 def checkout(request, item_subtype):
+    """Checkout :model:`library.Lendable` of item_subtype for user.
+
+    Checkout a lendable of the given item_subtype for the user. The
+    user is provided the necessary credentials for the lendable.
+
+    **Template:**
+    :template:`library/home.html`
+    """
     logger = logging.getLogger('django')
 
     item = Lendable(type=item_subtype, user=request.user)
@@ -78,13 +103,24 @@ def checkout(request, item_subtype):
         return render(request, 'library/home.html', context=context)
 
 
-@login_required(redirect_field_name=None)
+@login_required(redirect_field_name=None, login_url='library:require_login')
 def renew(request, primary_key):
-    item = get_object_or_404(Lendable.all_types, pk=primary_key, user=request.user)
+    """Renew :model:`library.Lendable` for the length of lending_period_in_days.
+
+    The lendable is renewed and available for another period equal to
+    lending_period_in_days. Each lendable can be renewed a given amount
+    of times based on the max_renewals value.
+
+    Redirect:
+    :view:`library.index`
+    """
+    item = get_object_or_404(Lendable.all_types,
+                             pk=primary_key,
+                             user=request.user)
     try:
         item.renew()
     except ValidationError as e:
-        for exception_message in e.message_dict[NON_FIELD_ERRORS]:
+        for exception_message in e.message_dict['renewals']:
             messages.error(request, exception_message)
     except Exception as e:
         messages.error(request, e)
@@ -97,14 +133,17 @@ def renew(request, primary_key):
     return redirect(index)
 
 
-@login_required(redirect_field_name=None)
+@login_required(redirect_field_name=None, login_url='library:require_login')
 def request_extension(request, primary_key):
-    item = get_object_or_404(
-        Lendable.all_types,
-        pk=primary_key,
-        user=request.user
-    )
+    """Send email to admins to request :model:`library.Lendable` extension.
 
+    After renewing a lendable the max available (max_renewals) times
+    a user may request an extension. An email is sent to the site
+    ADMINS as found in the settings for this request.
+
+    Redirect:
+    :view:`library.index`
+    """
     admin_path_for_lendable = reverse(
         'admin:library_lendable_change',
         args=(primary_key,)
@@ -132,9 +171,18 @@ def request_extension(request, primary_key):
     return redirect(index)
 
 
-@login_required(redirect_field_name=None)
+@login_required(redirect_field_name=None, login_url='library:require_login')
 def checkin(request, primary_key):
-    item = get_object_or_404(Lendable.all_types, pk=primary_key, user=request.user)
+    """Checkin the :model:`library.Lendable`.
+
+    Cleanup and delete Lendable.
+
+    Redirect:
+    :view:`library.index`
+    """
+    item = get_object_or_404(Lendable.all_types,
+                             pk=primary_key,
+                             user=request.user)
     try:
         item.checkin()
     except Exception as e:
@@ -146,11 +194,12 @@ def checkin(request, primary_key):
 
 
 def get_lendable_resources(user):
-    '''
-    Collect the classes of items that can be checked out; their class and
-    plugin data will be presented as a list of resources to 'check out'.
-    '''
-    if (not user or user.is_anonymous()):
+    """Collect the classes of items that can be checked out.
+
+    Their class and plugin data will be presented as
+    a list of resources to 'check out'.
+    """
+    if not user or user.is_anonymous:
         return []
 
     resources = []
@@ -168,7 +217,8 @@ def get_lendable_resources(user):
 
 
 def get_items_checked_out_by(user=None):
-    if (not user or user.is_anonymous()):
+    """Return the user's checked out lendables."""
+    if not user or user.is_anonymous:
         return []
 
     return Lendable.all_types.filter(user=user).order_by('checked_out_on')
@@ -178,16 +228,19 @@ def _verify_user(user=None):
     warnings.warn('_verify_user is deprecated and will be removed.'
                   ' Use login_required instead.', DeprecationWarning)
 
-    if (not user or user.is_anonymous()):
+    if not user or user.is_anonymous:
         raise Http404
+
 
 def _admin_emails():
     return ["%s <%s>" % (admin[0], admin[1]) for admin in settings.ADMINS]
+
 
 def _pack_up(credentials):
     return base64.urlsafe_b64encode(
         bytes(json.dumps(credentials), encoding="UTF-8")
     )
+
 
 def _credentials_filename(item):
     return slugify(

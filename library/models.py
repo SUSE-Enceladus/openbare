@@ -23,6 +23,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.utils.translation import ugettext_lazy as _
 
 from library.amazon_account_utils import AmazonAccountUtils
 
@@ -112,9 +113,11 @@ class Lendable(models.Model):
             self.renewals -= 1
             self.due_on = self.due_on + timedelta(self.lending_period_in_days)
         else:
-            raise ValidationError(
-                "No more renewals are available for this item."
-            )
+            raise ValidationError({
+                'renewals': ValidationError(_("No more renewals are "
+                                              "available for this item."),
+                                            code='invalid'),
+            })
         return self.save()
 
     def __set_initial_due_date(self):

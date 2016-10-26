@@ -21,8 +21,11 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.core import mail
 from django.test import Client, RequestFactory, TestCase
+from django.urls import reverse
 
 from library.views import index
+
+from unittest import mock
 
 from .models import EmailLog
 from .views import email_users
@@ -82,20 +85,19 @@ class SendMailTestCase(TestCase):
 
         # Confirm redirect
         response = email_users(request_send_mail)
-        self.assertEquals(response.status_code, 302)
-        self.assertEquals(response.url, '/admin/login/?next=/mail/send')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/admin/login/?next=/mail/send')
 
     def test_send_mail(self):
         """Test the sending of emails to users."""
         self.user.is_staff = True
         self.user.save()
 
-        response = self.c.login(username=self.user.username,
-                                password='str0ngpa$$w0rd')
+        self.c.login(username=self.user.username, password='str0ngpa$$w0rd')
 
         # Test required fields
         response = self.c.post('/mail/send/')
-        self.assertEquals(len(response.context['form'].errors), 3)
+        self.assertEqual(len(response.context['form'].errors), 3)
         self.assertTrue(self.fields_required(response.context['form'],
                                              ['subject', 'message', 'to']))
 
@@ -103,7 +105,7 @@ class SendMailTestCase(TestCase):
         context = {'to': 'haslendable'}
 
         response = self.c.post('/mail/send/', context)
-        self.assertEquals(len(response.context['form'].errors), 3)
+        self.assertEqual(len(response.context['form'].errors), 3)
         self.assertTrue(self.fields_required(response.context['form'],
                                              ['subject', 'message', 'lendable']
                                              ))
@@ -120,35 +122,43 @@ class SendMailTestCase(TestCase):
         response = self.c.post('/mail/send/', context)
         messages = list(response.context['messages'])
 
-        self.assertEquals(len(messages), 1)
-        self.assertEquals(messages[0].message,
-                          'No users match the current filters. '
-                          'Email not sent.')
-        self.assertEquals(len(mail.outbox), 0)
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(messages[0].message,
+                         'No users match the current filters. '
+                         'Email not sent.')
+        self.assertEqual(len(mail.outbox), 0)
 
         # Test send email
         context['to'] = 'all'
         response = self.c.post('/mail/send/', context, follow=True)
         messages = list(response.context['messages'])
 
-        self.assertEquals(len(messages), 1)
-        self.assertEquals(messages[0].message, 'Email sent to 1 user(s)')
-        self.assertEquals(len(mail.outbox), 1)
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(messages[0].message, 'Email sent to 1 user(s)')
+        self.assertEqual(len(mail.outbox), 1)
 
         # Confirm email
-        self.assertEquals(mail.outbox[0].subject, 'Test Email')
-        self.assertEquals(mail.outbox[0].bcc, ['<user1@openbare.com>'])
-        self.assertEquals(mail.outbox[0].from_email, settings.SERVER_EMAIL)
+        self.assertEqual(mail.outbox[0].subject, 'Test Email')
+        self.assertEqual(mail.outbox[0].bcc, ['<user1@openbare.com>'])
+        self.assertEqual(mail.outbox[0].from_email, settings.SERVER_EMAIL)
 
         # HTML tags are removed for plain text only email
-        self.assertEquals(mail.outbox[0].body,
-                          'HelloThis is a message!Thanks!')
+        self.assertEqual(mail.outbox[0].body,
+                         'HelloThis is a message!Thanks!')
 
         # Confirm email was logged
         logs = EmailLog.objects.filter(subject='Test Email',
                                        recipients='<user1@openbare.com>',
                                        body='HelloThis is a message!Thanks!')
-        self.assertEquals(len(logs), 1)
+        self.assertEqual(len(logs), 1)
+
+        # Confirm admin for EmailLog
+        self.user.is_superuser = True
+        self.user.save()
+
+        url = reverse('admin:mailer_emaillog_change', args=(logs[0].id,))
+        response = self.c.get(url)
+        self.assertContains(response, 'Test Email', status_code=200)
 
     def field_required(self, form, field):
         """Return True if field required error exists in form."""

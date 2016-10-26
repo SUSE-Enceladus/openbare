@@ -28,6 +28,7 @@ var/
 .tox/
 .coverage
 .cache
+htmlcov/
 nosetests.xml
 coverage.xml
 
@@ -41,3 +42,6 @@ Session.vim
 # temporary
 .netrwhist
 *i~
+
+### PyCharm ###
+.idea/
