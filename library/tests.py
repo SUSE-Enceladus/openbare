@@ -109,7 +109,6 @@ class LibraryTestCase(TestCase):
 
     def test_get_lendable_resources(self):
         """Test get_lendable_resources method."""
-
         # Anonymous or None user should return an empty set
         resources = get_lendable_resources(AnonymousUser())
         self.assertEqual(resources, [])

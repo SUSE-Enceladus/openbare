@@ -1,3 +1,5 @@
+"""Admin display options for Library app."""
+
 # Copyright © 2016 SUSE LLC, James Mason <jmason@suse.com>.
 #
 # This file is part of openbare.
@@ -17,10 +19,11 @@
 
 from django.contrib import admin
 from library.models import Lendable
-# Register your models here.
 
 
 class LendableAdmin(admin.ModelAdmin):
+    """Display primary key and str representation in list."""
+
     list_display = ('pk', '__str__')
 
 

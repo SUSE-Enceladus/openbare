@@ -1,3 +1,5 @@
+"""Format template tag filters for Library app."""
+
 # Copyright © 2016 SUSE LLC, James Mason <jmason@suse.com>.
 #
 # This file is part of openbare.
@@ -20,12 +22,9 @@ from django.template import defaultfilters
 
 
 def format_date(date):
-    '''
-    formatted date
-    '''
-    return defaultfilters.date(date,"j b Y")
+    """Format date string."""
+    return defaultfilters.date(date, "j b Y")
 
 
 register = template.Library()
 register.filter('format_date', format_date)
-

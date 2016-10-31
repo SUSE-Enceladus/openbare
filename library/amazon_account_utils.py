@@ -1,3 +1,5 @@
+"""Methods used for creating, destroying IAM accounts on AWS."""
+
 # Copyright © 2016 SUSE LLC, James Mason <jmason@suse.com>.
 #
 # This file is part of openbare.
@@ -19,46 +21,51 @@ import boto3
 import botocore.exceptions
 import collections
 import logging
-import os
 import random
-from logging import CRITICAL, ERROR, WARNING, INFO, DEBUG
+from logging import CRITICAL, ERROR, WARNING, INFO
 
-class AmazonAccountUtils():
+
+class AmazonAccountUtils:
+    """AWS lendable utils class."""
+
     logger = logging.getLogger('django')
 
     def __init__(self, aws_access_key_id, aws_secret_access_key):
+        """Initialize access key and secret for AWS account."""
         self.aws_access_key_id = aws_access_key_id
         self.aws_secret_access_key = aws_secret_access_key
 
     def log(self, message, level=logging.DEBUG, depth=0):
-        if (depth <= 0):
+        """Prepend string to log messages to denote class."""
+        if depth <= 0:
             prefix = 'AmazonAccountUtils: '
         else:
             prefix = "\t" * depth
 
-        if (level == CRITICAL):
+        if level == CRITICAL:
             self.logger.critical(prefix + str(message))
-        elif (level == ERROR):
+        elif level == ERROR:
             self.logger.error(prefix + str(message))
-        elif (level == WARNING):
+        elif level == WARNING:
             self.logger.warning(prefix + str(message))
-        elif (level == INFO):
+        elif level == INFO:
             self.logger.info(prefix + str(message))
         else:
             self.logger.debug(prefix + str(message))
 
     def _make_password(self, length=12):
-        '''
+        """Generate a random password.
+
         Provides a password of a given length, containing an equal distribution
         of lowercase and uppercase ASCII characters, digits, and puntuation,
         while avoiding ambiguous characters.
 
         Based on
         http://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_passwords_account-policy.html#password-policy-details
-        '''
-        lowercase = 'abcdefghjkmnopqrstuvwxyz' # removed ambiguous 'i', 'l'
-        uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ' # removed ambiguous 'I', 'O'
-        digits = '23456789' # removed ambiguous '1', '0'
+        """
+        lowercase = 'abcdefghjkmnopqrstuvwxyz'  # removed ambiguous 'i', 'l'
+        uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ'  # removed ambiguous 'I', 'O'
+        digits = '23456789'  # removed ambiguous '1', '0'
         # removed ambiguous '|', quotes and illegal special characters
         punctuation = '!@#$%^&*()_+-=[]{}'
         password_set = []
@@ -99,10 +106,11 @@ class AmazonAccountUtils():
             return user
 
     def _cleanup_iam_user(self, iam_user):
-        '''
+        """Cleanup resources for IAM user.
+
         In order to delete an IAM user, the user must not belong to any groups,
         have any keys or signing certificates, or have any attached policies.
-        '''
+        """
         self.log("cleaning up user '%s'" % iam_user.user_name, INFO)
         self.log(
             "deleting login profile for user '%s'" % iam_user.user_name,
@@ -153,13 +161,15 @@ class AmazonAccountUtils():
         return True
 
     def create_iam_account(self, username, group=None):
-        '''
-        Create an IAM account for the given username; return the required
-        credentials.
-        '''
+        """Create an IAM account for the given username.
+
+        Returns:
+            The required credentials.
+        """
         self.log("creating IAM user '%s'" % username, INFO)
         credentials = collections.OrderedDict([
-            ('Web Console URL', 'https://suse-demo.signin.aws.amazon.com/console'),
+            ('Web Console URL',
+             'https://suse-demo.signin.aws.amazon.com/console'),
             ('Username', username),
             ('Password', self._make_password())
         ])
@@ -184,6 +194,7 @@ class AmazonAccountUtils():
         return credentials
 
     def destroy_iam_account(self, username):
+        """Cleanup and delete IAM user account."""
         self.log("destroying IAM user '%s'" % username, INFO)
         iam_user = self._get_iam_user(username)
         if iam_user:

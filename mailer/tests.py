@@ -25,8 +25,6 @@ from django.urls import reverse
 
 from library.views import index
 
-from unittest import mock
-
 from .models import EmailLog
 from .views import email_users
 

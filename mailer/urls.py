@@ -20,6 +20,7 @@
 from django.conf.urls import url
 from .views import email_users
 
+app_name = 'mailer'
 urlpatterns = [
     url(r'^send/$', email_users, name='email_users'),
 ]

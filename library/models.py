@@ -1,3 +1,5 @@
+"""Models for library app."""
+
 # Copyright © 2016 SUSE LLC, James Mason <jmason@suse.com>.
 #
 # This file is part of openbare.
@@ -30,28 +32,30 @@ from library.amazon_account_utils import AmazonAccountUtils
 
 # http://schinckel.net/2013/07/28/django-single-table-inheritance-on-the-cheap./
 class ProxyManager(models.Manager):
-    '''
-    Override Manager to provide type-specific queries for the proxy classes
-    '''
+    """Override Manager to provide type-specific queries for proxy classes."""
+
     def get_query_set(self):
+        """Return queryset of lendables that match type."""
         return super(ProxyManager, self).get_query_set().filter(
             type=self.model.__name__.lower())
 
 
 class Lendable(models.Model):
+    """Lendable model that lendable resources extend from."""
+
     type = models.CharField(max_length=254)
     checked_out_on = models.DateTimeField(auto_now_add=True)
     due_on = models.DateTimeField()
-    notify_timer = models.FloatField(null=True,blank=True)
+    notify_timer = models.FloatField(null=True, blank=True)
     renewals = models.IntegerField(default=0)
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     credentials = None
 
     # The first manager assigned is the default manager for the class and its
     # subclasses. ProxyManager filters for the 'type' attribute to only load
     # records that match the subclass...
     lendables = ProxyManager()
-    # ...but, we need to be able to load a collection of lendables of all types!
+    # ..but, we need to be able to load a collection of lendables of all types!
     # For example - everything that is checked out by a single user.
     # For this we can use the 'stock' manager.
     all_types = models.Manager()
@@ -64,6 +68,11 @@ class Lendable(models.Model):
     max_renewals = 2
 
     def __init__(self, *args, **kwargs):
+        """Initialize Lendable instance.
+
+        If lendable is an instance of a subclass set type to
+        class name.
+        """
         super(Lendable, self).__init__(*args, **kwargs)
         subclass = [
             x for x in self.__class__.__subclasses__() if (
@@ -76,10 +85,12 @@ class Lendable(models.Model):
             self.type = self.__class__.__name__.lower()
 
     def __str__(self):
+        """Lendable string representation."""
         return "%s checked out by %s" % (self.name, self.user)
 
     @classmethod
     def is_available_for_user(self, user):
+        """Return True if user can checkout lendable."""
         return (
             self.lendables.count() < self.max_checked_out and
             self.lendables.filter(user=user).count() == 0
@@ -87,6 +98,7 @@ class Lendable(models.Model):
 
     @classmethod
     def next_available_date(self):
+        """Return next available checkout date."""
         try:
             next_lendable_due = self.lendables.earliest('checked_out_on')
         except ObjectDoesNotExist:
@@ -95,20 +107,30 @@ class Lendable(models.Model):
             return next_lendable_due.due_on
 
     def max_due_date(self):
+        """Return max due date including all possible renewals."""
         return (
             self.due_on +
             timedelta(self.lending_period_in_days * self.renewals)
         )
 
     def is_renewable(self):
+        """Return True if renewals are available."""
         return self.renewals > 0
 
     def checkout(self):
+        """Initialize checked out date, due date and renewals available."""
         self.checked_out_on = datetime.now(django.utils.timezone.UTC())
         self.__set_initial_due_date()
         self.renewals = settings.MAX_RENEWALS.get(self.type, self.max_renewals)
 
     def renew(self):
+        """Renew lendable.
+
+        If renewals are available update the due_on date by adding
+        another period equal to lending_period_in_days.
+
+        If no renewals available raise error and display message to user.
+        """
         if self.renewals > 0:
             self.renewals -= 1
             self.due_on = self.due_on + timedelta(self.lending_period_in_days)
@@ -121,9 +143,10 @@ class Lendable(models.Model):
         return self.save()
 
     def __set_initial_due_date(self):
-        """
-            When a lendable is checked out, the due date is set to the checkout
-            date plus the lending period.
+        """Set due date when a lendable is checked out.
+
+        When a lendable is checked out, the due date is set to the checkout
+        date plus the lending period.
         """
         self.due_on = (
             self.checked_out_on +
@@ -132,6 +155,8 @@ class Lendable(models.Model):
 
 
 class AmazonDemoAccount(Lendable):
+    """AWS demo account lendable."""
+
     name = 'Amazon Web Services - Demo Account'
     description = """\
 Build your customer a comprehensive PoC without touching hardware, or launch a
@@ -149,9 +174,12 @@ cloud gives you access to a massive volume of resources on-demand.
     )
 
     class Meta:
+        """Proxy model of model:`library.lendable`."""
+
         proxy = True
 
     def checkout(self):
+        """Checkout a demo account using IAM credentials."""
         super().checkout()
         group = None
         try:
@@ -164,4 +192,5 @@ cloud gives you access to a massive volume of resources on-demand.
         )
 
     def checkin(self):
+        """Checkin demo account and clean up AWS resources."""
         self.amazon_account_utils.destroy_iam_account(self.user.username)

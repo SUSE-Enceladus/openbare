@@ -1,3 +1,5 @@
+"""Template tag filters for Bootstrap CSS."""
+
 # Copyright © 2016 SUSE LLC, James Mason <jmason@suse.com>.
 #
 # This file is part of openbare.
@@ -18,7 +20,9 @@
 from django import template
 from django.contrib.messages import constants as MESSAGE_LEVELS
 
+
 def bootstrap_alert_class(message_level):
+    """Return a dictionary used to apply the correct CSS class."""
     classes_for_levels = {
         MESSAGE_LEVELS.INFO: 'alert-info',
         MESSAGE_LEVELS.SUCCESS: 'alert-success',
@@ -29,4 +33,3 @@ def bootstrap_alert_class(message_level):
 
 register = template.Library()
 register.filter('bootstrap_alert_class', bootstrap_alert_class)
-
