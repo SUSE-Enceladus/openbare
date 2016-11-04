@@ -160,6 +160,10 @@ class AmazonAccountUtils:
             iam_user.detach_policy(PolicyArn=attached_policy.arn)
         return True
 
+    def iam_user_exists(self, username):
+        """Return true if account exists."""
+        return True if self._get_iam_user(username) else False
+
     def create_iam_account(self, username, group=None):
         """Create an IAM account for the given username.
 

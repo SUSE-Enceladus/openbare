@@ -25,6 +25,7 @@ class LendableAdmin(admin.ModelAdmin):
     """Display primary key and str representation in list."""
 
     list_display = ('pk', '__str__')
+    readonly_fields = ('type', 'user', 'username', 'notify_timer')
 
 
 admin.site.register(Lendable, LendableAdmin)

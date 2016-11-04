@@ -18,6 +18,7 @@
 # along with openbare. If not, see <http://www.gnu.org/licenses/>.
 
 import django
+import re
 
 from datetime import datetime, timedelta
 
@@ -25,9 +26,12 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.utils.crypto import get_random_string
 from django.utils.translation import ugettext_lazy as _
 
 from library.amazon_account_utils import AmazonAccountUtils
+
+from unidecode import unidecode
 
 
 # http://schinckel.net/2013/07/28/django-single-table-inheritance-on-the-cheap./
@@ -49,6 +53,7 @@ class Lendable(models.Model):
     notify_timer = models.FloatField(null=True, blank=True)
     renewals = models.IntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    username = models.CharField(max_length=320)
     credentials = None
 
     # The first manager assigned is the default manager for the class and its
@@ -119,6 +124,9 @@ class Lendable(models.Model):
 
     def checkout(self):
         """Initialize checked out date, due date and renewals available."""
+        if not self.is_available_for_user(self.user):
+            raise Exception('{} unavailable for checkout.'.format(self.name))
+
         self.checked_out_on = datetime.now(django.utils.timezone.UTC())
         self.__set_initial_due_date()
         self.renewals = settings.MAX_RENEWALS.get(self.type, self.max_renewals)
@@ -180,17 +188,40 @@ cloud gives you access to a massive volume of resources on-demand.
 
     def checkout(self):
         """Checkout a demo account using IAM credentials."""
-        super().checkout()
+        super(AmazonDemoAccount, self).checkout()
+
+        self._set_username()
         group = None
         try:
             group = settings.AWS_IAM_GROUP
         except:
             pass
+
         self.credentials = self.amazon_account_utils.create_iam_account(
-            self.user.username,
+            self.username,
             group
         )
 
     def checkin(self):
         """Checkin demo account and clean up AWS resources."""
-        self.amazon_account_utils.destroy_iam_account(self.user.username)
+        self.amazon_account_utils.destroy_iam_account(self.username)
+
+    def _set_username(self):
+        """Normalize username to remove none ascii chars and validate."""
+        self.username = unidecode(self.user.username)
+
+        # If username is invalid or username account already exists create
+        # a new username. Lendable must be available for checkout by user
+        # to hit this code.
+        if not self.validate_username() or \
+                self.amazon_account_utils.iam_user_exists(self.username):
+            self.username = get_random_string(length=20)
+
+    def validate_username(self):
+        """Validate username.
+
+        Length: Between 1 and 65
+        Chars: Alphanumeric including +=,.@_-
+        """
+        return re.match('^[\w.@+=,-]+$', self.username) and \
+            65 > len(self.username) > 1

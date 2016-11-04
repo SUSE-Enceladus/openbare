@@ -23,7 +23,7 @@ from django.core import mail
 from django.test import Client, RequestFactory, TestCase
 from django.urls import reverse
 
-from library.views import index
+from library.views import IndexView
 
 from .models import EmailLog
 from .views import email_users
@@ -62,7 +62,8 @@ class SendMailTestCase(TestCase):
         self.user.save()
 
         # Confirm menu item displayed
-        response = index(request_index)
+        view = IndexView.as_view()
+        response = view(request_index)
         self.assertContains(response, 'href="/mail/send/"', status_code=200)
 
         # Confirm send email view access
@@ -78,7 +79,8 @@ class SendMailTestCase(TestCase):
         and can send emails to users.
         """
         # Confirm menu item not displayed
-        response = index(request_index)
+        view = IndexView.as_view()
+        response = view(request_index)
         self.assertNotContains(response, 'href="/mail/send/"', status_code=200)
 
         # Confirm redirect

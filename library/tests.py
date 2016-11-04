@@ -17,13 +17,19 @@
 # You should have received a copy of the GNU General Public License
 # along with openbare. If not, see <http://www.gnu.org/licenses/>.
 
+from unittest.mock import patch
+
 from django.contrib.auth.models import AnonymousUser, User
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import Client, RequestFactory, TestCase
 
-from .models import Lendable
-from .views import get_items_checked_out_by, get_lendable_resources, index
+from .models import AmazonDemoAccount, Lendable
+from .views import get_items_checked_out_by, get_lendable_resources, IndexView
+
+from library.amazon_account_utils import AmazonAccountUtils
+
+from moto import mock_iam
 
 
 class LibraryTestCase(TestCase):
@@ -42,7 +48,8 @@ class LibraryTestCase(TestCase):
         request = self.factory.get("/index")
         request.user = AnonymousUser()
 
-        response = index(request)
+        view = IndexView.as_view()
+        response = view(request)
         self.assertContains(response, 'Log in', status_code=200)
         self.assertContains(response, '<h2>Welcome!</h2>', status_code=200)
 
@@ -50,7 +57,7 @@ class LibraryTestCase(TestCase):
         """Test login required to perform lendable actions."""
         for view in ['library:checkout', 'library:renew',
                      'library:checkin', 'library:request_extension']:
-            response = self.c.post(reverse(view, args=[1]), follow=True)
+            response = self.c.get(reverse(view, args=[1]), follow=True)
             self.assertContains(response,
                                 'Permission denied: You must log in.',
                                 status_code=200)
@@ -60,9 +67,9 @@ class LibraryTestCase(TestCase):
         self.c.login(username=self.user.username, password='str0ngpa$$w0rd')
 
         # Test check out lendable
-        response = self.c.post(reverse('library:checkout',
-                                       args=['lendable']),
-                               follow=True)
+        response = self.c.get(reverse('library:checkout',
+                                      args=['lendable']),
+                              follow=True)
 
         self.assertContains(response, 'is checked out to you',
                             status_code=200)
@@ -77,8 +84,8 @@ class LibraryTestCase(TestCase):
         lending_period_in_days = lendables[0].lending_period_in_days
 
         for i in range(max_renewals):
-            self.c.post(reverse('library:renew', args=[lendables[0].id]),
-                        follow=True)
+            self.c.get(reverse('library:renew', args=[lendables[0].id]),
+                       follow=True)
 
         renewed_lendable = Lendable.all_types.get(id=lendables[0].id)
 
@@ -89,9 +96,9 @@ class LibraryTestCase(TestCase):
         self.assertEqual(renewed_lendable.due_on, lendables[0].max_due_date())
 
         # Test no more renewals available
-        response = self.c.post(reverse('library:renew',
-                                       args=[lendables[0].id]),
-                               follow=True)
+        response = self.c.get(reverse('library:renew',
+                                      args=[lendables[0].id]),
+                              follow=True)
         self.assertContains(response, 'No more renewals are available '
                                       'for this item.')
 
@@ -128,3 +135,54 @@ class LibraryTestCase(TestCase):
 
         lendables = get_items_checked_out_by(AnonymousUser())
         self.assertEqual(lendables, [])
+
+
+class AWSTestCase(TestCase):
+    """Test library app."""
+
+    def setUp(self):
+        """Setup user and account instances."""
+        self.user = User.objects.create_user(username="Jőhn",
+                                             email="user1@openbare.com",
+                                             password="str0ngpa$$w0rd")
+        self.aws_account = AmazonDemoAccount(user=self.user)
+
+    def test_validate_username(self):
+        """Test validate username method."""
+        # Test empty string
+        self.aws_account.username = ''
+        self.assertFalse(self.aws_account.validate_username())
+
+        # Test name > 64
+        self.aws_account.username = 't' * 65
+        self.assertFalse(self.aws_account.validate_username())
+
+        # Test valid string
+        self.aws_account.username = 'testname'
+        self.assertTrue(self.aws_account.validate_username())
+
+        # Test invalid character
+        self.aws_account.username = 'testname!'
+        self.assertFalse(self.aws_account.validate_username())
+
+    @mock_iam
+    def test_set_username(self):
+        """Test set username method."""
+        # Test unicode converts to ascii Jőhn to John
+        self.aws_account._set_username()
+        self.assertEqual(self.aws_account.username, 'John')
+
+        # Test random username generated if iam user exists
+        with patch.object(AmazonAccountUtils,
+                          'iam_user_exists',
+                          return_value=True):
+            self.aws_account._set_username()
+            self.assertNotEqual(self.aws_account.username, 'John')
+            self.assertEqual(len(self.aws_account.username), 20)
+
+        # Test random username is generated when regex invalid
+        # after conversion. ʢʢʢ converts to ???.
+        self.user.username = 'ʢʢʢ'
+        self.aws_account._set_username()
+        self.assertNotEqual(self.aws_account.username, '???')
+        self.assertEqual(len(self.aws_account.username), 20)

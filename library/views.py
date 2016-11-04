@@ -20,12 +20,14 @@
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.http import Http404
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, redirect
 from django.template.defaultfilters import slugify
+from django.views.generic.base import TemplateView
 
 import base64
 import json
@@ -36,20 +38,26 @@ from .templatetags import formatting_filters
 from .models import Lendable
 
 
-def index(request):
+class IndexView(TemplateView):
     """Display the openbare homepage.
 
     **Template:**
     :template:`library/home.html`
     """
-    context = {
-        'resources': get_lendable_resources(request.user),
-        'user_items': get_items_checked_out_by(request.user),
-        'admin_emails': _admin_emails(),
-        'checkout': False,
-        'host': settings.HOST
-    }
-    return render(request, 'library/home.html', context=context)
+
+    template_name = 'library/home.html'
+
+    def get_context_data(self, **kwargs):
+        """Return context dictionary for view."""
+        context = super(IndexView, self).get_context_data(**kwargs)
+
+        context['resources'] = get_lendable_resources(self.request.user)
+        context['user_items'] = get_items_checked_out_by(self.request.user)
+        context['admin_emails'] = _admin_emails()
+        context['checkout'] = False
+        context['host'] = settings.HOST
+
+        return context
 
 
 def require_login(request):
@@ -60,11 +68,10 @@ def require_login(request):
     to the index page.
     """
     messages.warning(request, 'Permission denied: You must log in.')
-    return redirect(index)
+    return redirect(reverse('library:index'))
 
 
-@login_required(redirect_field_name=None, login_url='library:require_login')
-def checkout(request, item_subtype):
+class CheckoutView(LoginRequiredMixin, IndexView):
     """Checkout :model:`library.Lendable` of item_subtype for user.
 
     Checkout a lendable of the given item_subtype for the user. The
@@ -73,34 +80,53 @@ def checkout(request, item_subtype):
     **Template:**
     :template:`library/home.html`
     """
-    logger = logging.getLogger('django')
 
-    item = Lendable(type=item_subtype, user=request.user)
-    try:
-        item.checkout()
-        item.save()
-    except Exception as e:
-        messages.error(request, e)
-        logger.exception('%s: %s' % (type(e).__name__, e))
-        return redirect(index)
-    else:
-        messages.success(
-            request,
-            "'%s' is checked out to you until %s." %
-            (item.name, formatting_filters.format_date(item.due_on))
-        )
-        context = {
-            'resources': get_lendable_resources(request.user),
-            'user_items': get_items_checked_out_by(request.user),
-            'admin_emails': _admin_emails(),
-            'checkout': True,
-            'checkout_title': item.name,
-            'checkout_credentials': item.credentials,
-            'download_credentials_payload': _pack_up(item.credentials),
-            'download_credentials_filename': _credentials_filename(item)
-        }
+    redirect_field_name = None
+    login_url = 'library:require_login'
 
-        return render(request, 'library/home.html', context=context)
+    def __init__(self):
+        """Initialize the view."""
+        super(CheckoutView, self).__init__()
+        self.item = None
+
+    def get(self, request, *args, **kwargs):
+        """Process checkout when view triggered by GET request."""
+        logger = logging.getLogger('django')
+
+        try:
+            item_subtype = self.kwargs.get('item_subtype', None)
+            self.item = Lendable(type=item_subtype,
+                                 user=self.request.user)
+
+            self.item.checkout()
+            self.item.save()
+        except Exception as e:
+            messages.error(request, e)
+            logger.exception('%s: %s' % (type(e).__name__, e))
+            return redirect(reverse('library:index'))
+        else:
+            messages.success(
+                request,
+                "'%s' is checked out to you until %s." %
+                (self.item.name,
+                 formatting_filters.format_date(self.item.due_on))
+            )
+
+        return super(CheckoutView, self).get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        """Return context dictionary for view."""
+        context = super(CheckoutView, self).get_context_data(**kwargs)
+
+        context['checkout'] = True
+        context['checkout_title'] = self.item.name
+        context['checkout_credentials'] = self.item.credentials
+        context['download_credentials_payload'] = _pack_up(
+            self.item.credentials)
+        context['download_credentials_filename'] = _credentials_filename(
+            self.item)
+
+        return context
 
 
 @login_required(redirect_field_name=None, login_url='library:require_login')
@@ -130,7 +156,7 @@ def renew(request, primary_key):
             "'%s' is now due on %s." %
             (item.name, formatting_filters.format_date(item.due_on))
         )
-    return redirect(index)
+    return redirect(reverse('library:index'))
 
 
 @login_required(redirect_field_name=None, login_url='library:require_login')
@@ -168,7 +194,7 @@ def request_extension(request, primary_key):
             'Your request was sent to the openbare Admins' +
             ' and will be evaluated.'
         )
-    return redirect(index)
+    return redirect(reverse('library:index'))
 
 
 @login_required(redirect_field_name=None, login_url='library:require_login')
@@ -190,7 +216,7 @@ def checkin(request, primary_key):
     else:
         messages.success(request, "'%s' returned." % (item.name))
         item.delete()
-    return redirect(index)
+    return redirect(reverse('library:index'))
 
 
 def get_lendable_resources(user):

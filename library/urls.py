@@ -23,9 +23,9 @@ from . import views
 
 app_name = 'library'
 urlpatterns = [
-    url(r'^$', views.index, name='index'),
+    url(r'^$', views.IndexView.as_view(), name='index'),
     url(r'^resource/(?P<item_subtype>\w+)/checkout$',
-        views.checkout,
+        views.CheckoutView.as_view(),
         name='checkout'
         ),
     url(r'^instance/(?P<primary_key>\d+)/renew$',
