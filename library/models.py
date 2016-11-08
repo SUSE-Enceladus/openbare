@@ -191,11 +191,7 @@ cloud gives you access to a massive volume of resources on-demand.
         super(AmazonDemoAccount, self).checkout()
 
         self._set_username()
-        group = None
-        try:
-            group = settings.AWS_IAM_GROUP
-        except:
-            pass
+        group = getattr(settings, 'AWS_IAM_GROUP', None)
 
         self.credentials = self.amazon_account_utils.create_iam_account(
             self.username,

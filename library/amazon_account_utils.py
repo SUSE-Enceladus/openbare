@@ -22,6 +22,9 @@ import botocore.exceptions
 import collections
 import logging
 import random
+
+from django.conf import settings
+
 from logging import CRITICAL, ERROR, WARNING, INFO
 
 
@@ -171,9 +174,15 @@ class AmazonAccountUtils:
             The required credentials.
         """
         self.log("creating IAM user '%s'" % username, INFO)
+
+        alias = getattr(settings, 'AWS_ACCOUNT_ID_ALIAS', None)
+        if alias:
+            url = 'https://{}.signin.aws.amazon.com/console'.format(alias)
+        else:
+            url = 'https://signin.aws.amazon.com/console'
+
         credentials = collections.OrderedDict([
-            ('Web Console URL',
-             'https://suse-demo.signin.aws.amazon.com/console'),
+            ('Web Console URL', url),
             ('Username', username),
             ('Password', self._make_password())
         ])
