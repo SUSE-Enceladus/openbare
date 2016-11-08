@@ -20,7 +20,7 @@ Dependencies
 ------------
 
 * python > 3.2
-* Django ~ 1.8.4
+* Django >= 1.10
 * python-social-auth
 * django-debug-toolbar
 * django-markdown-deux

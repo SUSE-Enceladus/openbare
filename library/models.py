@@ -127,6 +127,7 @@ class Lendable(models.Model):
         if not self.is_available_for_user(self.user):
             raise Exception('{} unavailable for checkout.'.format(self.name))
 
+        self._set_username()
         self.checked_out_on = datetime.now(django.utils.timezone.UTC())
         self.__set_initial_due_date()
         self.renewals = settings.MAX_RENEWALS.get(self.type, self.max_renewals)
@@ -143,11 +144,9 @@ class Lendable(models.Model):
             self.renewals -= 1
             self.due_on = self.due_on + timedelta(self.lending_period_in_days)
         else:
-            raise ValidationError({
-                'renewals': ValidationError(_("No more renewals are "
-                                              "available for this item."),
-                                            code='invalid'),
-            })
+            raise ValidationError(
+                _("No more renewals are available for this item.")
+            )
         return self.save()
 
     def __set_initial_due_date(self):
@@ -160,6 +159,22 @@ class Lendable(models.Model):
             self.checked_out_on +
             timedelta(self.lending_period_in_days)
         )
+
+    def _set_username(self):
+        """Set username to user.username and validate."""
+        self.username = self.user.username
+
+        # If username is invalid generate a new username. Lendable must
+        # be available for checkout by user to hit this code.
+        if not self._validate_username():
+            self.username = get_random_string(length=20)
+
+    def _validate_username(self):
+        """Validate username.
+
+        Length: Between 1 and 321 (accounts for emails)
+        """
+        return 321 > len(self.username) > 1
 
 
 class AmazonDemoAccount(Lendable):
@@ -189,8 +204,6 @@ cloud gives you access to a massive volume of resources on-demand.
     def checkout(self):
         """Checkout a demo account using IAM credentials."""
         super(AmazonDemoAccount, self).checkout()
-
-        self._set_username()
         group = getattr(settings, 'AWS_IAM_GROUP', None)
 
         self.credentials = self.amazon_account_utils.create_iam_account(
@@ -209,11 +222,11 @@ cloud gives you access to a massive volume of resources on-demand.
         # If username is invalid or username account already exists create
         # a new username. Lendable must be available for checkout by user
         # to hit this code.
-        if not self.validate_username() or \
+        if not self._validate_username() or \
                 self.amazon_account_utils.iam_user_exists(self.username):
             self.username = get_random_string(length=20)
 
-    def validate_username(self):
+    def _validate_username(self):
         """Validate username.
 
         Length: Between 1 and 65

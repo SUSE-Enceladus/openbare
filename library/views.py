@@ -53,7 +53,6 @@ class IndexView(TemplateView):
 
         context['resources'] = get_lendable_resources(self.request.user)
         context['user_items'] = get_items_checked_out_by(self.request.user)
-        context['admin_emails'] = _admin_emails()
         context['checkout'] = False
         context['host'] = settings.HOST
 
@@ -94,8 +93,7 @@ class CheckoutView(LoginRequiredMixin, IndexView):
         logger = logging.getLogger('django')
 
         try:
-            item_subtype = self.kwargs.get('item_subtype', None)
-            self.item = Lendable(type=item_subtype,
+            self.item = Lendable(type=self.kwargs.get('item_subtype', None),
                                  user=self.request.user)
 
             self.item.checkout()
@@ -146,7 +144,7 @@ def renew(request, primary_key):
     try:
         item.renew()
     except ValidationError as e:
-        for exception_message in e.message_dict['renewals']:
+        for exception_message in e.messages:
             messages.error(request, exception_message)
     except Exception as e:
         messages.error(request, e)

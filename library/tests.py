@@ -29,8 +29,6 @@ from .views import get_items_checked_out_by, get_lendable_resources, IndexView
 
 from library.amazon_account_utils import AmazonAccountUtils
 
-from moto import mock_iam
-
 
 class LibraryTestCase(TestCase):
     """Test library app."""
@@ -151,26 +149,28 @@ class AWSTestCase(TestCase):
         """Test validate username method."""
         # Test empty string
         self.aws_account.username = ''
-        self.assertFalse(self.aws_account.validate_username())
+        self.assertFalse(self.aws_account._validate_username())
 
         # Test name > 64
         self.aws_account.username = 't' * 65
-        self.assertFalse(self.aws_account.validate_username())
+        self.assertFalse(self.aws_account._validate_username())
 
         # Test valid string
         self.aws_account.username = 'testname'
-        self.assertTrue(self.aws_account.validate_username())
+        self.assertTrue(self.aws_account._validate_username())
 
         # Test invalid character
         self.aws_account.username = 'testname!'
-        self.assertFalse(self.aws_account.validate_username())
+        self.assertFalse(self.aws_account._validate_username())
 
-    @mock_iam
     def test_set_username(self):
         """Test set username method."""
         # Test unicode converts to ascii Jőhn to John
-        self.aws_account._set_username()
-        self.assertEqual(self.aws_account.username, 'John')
+        with patch.object(AmazonAccountUtils,
+                          'iam_user_exists',
+                          return_value=False):
+            self.aws_account._set_username()
+            self.assertEqual(self.aws_account.username, 'John')
 
         # Test random username generated if iam user exists
         with patch.object(AmazonAccountUtils,
