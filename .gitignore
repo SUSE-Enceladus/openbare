@@ -14,8 +14,10 @@ bin/
 build/
 develop-eggs/
 dist/
+include/
 eggs/
 lib/
+lib64
 lib64/
 parts/
 sdist/
@@ -45,3 +47,6 @@ Session.vim
 
 ### PyCharm ###
 .idea/
+
+### pip ###
+pip-selfcheck.json

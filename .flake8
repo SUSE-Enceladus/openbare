@@ -1,0 +1,2 @@
+[flake8]
+exclude = __init__.py, migrations, lib64, include, lib, bin, settings
