@@ -29,6 +29,8 @@ from .views import get_items_checked_out_by, get_lendable_resources, IndexView
 
 from library.amazon_account_utils import AmazonAccountUtils
 
+from moto import mock_iam
+
 
 class LibraryTestCase(TestCase):
     """Test library app."""
@@ -100,6 +102,18 @@ class LibraryTestCase(TestCase):
         self.assertContains(response, 'No more renewals are available '
                                       'for this item.')
 
+        # Test renew catches generic exception
+        with patch.object(Lendable,
+                          'renew',
+                          side_effect=Exception('Renew Failed!')):
+            response = self.c.get(reverse('library:renew',
+                                          args=[lendables[0].id]),
+                                  follow=True)
+
+        # Confirm error message displayed
+        message = list(response.context['messages'])[0].message
+        self.assertEqual(message, 'Renew Failed!')
+
         # Test request extension
         with self.settings(ADMINS=[('John', 'john@example.com')]):
             response = self.c.post(reverse('library:request_extension',
@@ -111,6 +125,36 @@ class LibraryTestCase(TestCase):
                             'Your request was sent to the openbare Admins'
                             ' and will be evaluated.')
         self.assertEqual(len(mail.outbox), 1)
+
+        # Test request extension catches generic exception
+        with patch('library.views._admin_emails',
+                   side_effect=Exception('Email Failed!')):
+            response = self.c.post(reverse('library:request_extension',
+                                           args=[lendables[0].id]),
+                                   {'message': 'Extend me!'},
+                                   follow=True)
+
+        # Confirm error message displayed
+        message = list(response.context['messages'])[0].message
+        self.assertEqual(message, 'Email Failed!')
+
+    def test_checkout_exception(self):
+        self.c.login(username=self.user.username, password='str0ngpa$$w0rd')
+
+        # Test check out lendable raises exception
+        with patch.object(Lendable,
+                          'checkout',
+                          side_effect=Exception('Checkout Failed!')):
+            response = self.c.get(reverse('library:checkout',
+                                          args=['lendable']),
+                                  follow=True)
+
+        # Confirm error message displayed
+        message = list(response.context['messages'])[0].message
+        self.assertEqual(message, 'Checkout Failed!')
+
+        # Confirm lendable not created
+        self.assertEqual(Lendable.all_types.count(), 0)
 
     def test_get_lendable_resources(self):
         """Test get_lendable_resources method."""
@@ -140,6 +184,7 @@ class AWSTestCase(TestCase):
 
     def setUp(self):
         """Setup user and account instances."""
+        self.c = Client()
         self.user = User.objects.create_user(username="Jőhn",
                                              email="user1@openbare.com",
                                              password="str0ngpa$$w0rd")
@@ -186,3 +231,123 @@ class AWSTestCase(TestCase):
         self.aws_account._set_username()
         self.assertNotEqual(self.aws_account.username, '???')
         self.assertEqual(len(self.aws_account.username), 20)
+
+    @mock_iam()
+    def test_aws_checkout(self):
+        """Test AWS IAM checkout and checkin.
+
+        Mock cleanup method with a return value of True.
+        """
+        self.c.login(username=self.user.username, password='str0ngpa$$w0rd')
+
+        # Checkout AWS account
+        with self.settings(AWS_ACCOUNT_ID_ALIAS='John.Wayne'):
+            with patch.object(AmazonAccountUtils,
+                              '_cleanup_iam_user',
+                              return_value=True):
+                # Test check out AWS lendable
+                response = self.c.get(reverse('library:checkout',
+                                              args=['amazondemoaccount']),
+                                      follow=True)
+
+        # Get lendable and parse due date string
+        aws_lendable = self.user.lendable_set.first()
+        date_str = aws_lendable.due_on.strftime("%d %b %Y").lower()
+
+        # Confirm sucess message displayed
+        message = list(response.context['messages'])[0].message
+        self.assertEqual("'Amazon Web Services - Demo Account' "
+                         "is checked out to you until %s." % date_str,
+                         message)
+
+        # Confirm credential values displayed in modal
+        self.assertContains(response, '<code>John</code>')
+        self.assertContains(response,
+                            'https://John.Wayne.signin.aws.amazon.com/console')
+
+        # Confirm lendable created
+        self.assertEqual(Lendable.all_types.count(), 1)
+
+        # Test user cannot checkout AWS account twice
+        response = self.c.get(reverse('library:checkout',
+                                      args=['amazondemoaccount']),
+                              follow=True)
+
+        # Confirm error message displayed
+        message = list(response.context['messages'])[0].message
+        self.assertEqual(message,
+                         "Amazon Web Services - Demo Account "
+                         "unavailable for checkout.")
+
+        # Confirm lendable not created
+        self.assertEqual(Lendable.all_types.count(), 1)
+
+        # Get lendable primary key
+        pk = self.user.lendable_set.first().id
+
+        # Test checkin handles generic exception
+        with patch.object(AmazonDemoAccount,
+                          'checkin',
+                          side_effect=Exception('Checkin Failed!')):
+            response = self.c.get(reverse('library:checkin',
+                                          args=[pk]),
+                                  follow=True)
+
+        # Confirm error message displayed
+        message = list(response.context['messages'])[0].message
+        self.assertEqual(message, 'Checkin Failed!')
+
+        # Checkin AWS account
+        with patch.object(AmazonAccountUtils,
+                          '_cleanup_iam_user',
+                          return_value=True):
+            # Test check in AWS lendable
+            response = self.c.get(reverse('library:checkin',
+                                          args=[pk]),
+                                  follow=True)
+
+        # Confirm success message displayed
+        message = list(response.context['messages'])[0].message
+        self.assertEqual("'Amazon Web Services - Demo Account' returned.",
+                         message)
+
+        # Confirm lendable deleted
+        self.assertEqual(Lendable.all_types.count(), 0)
+
+    @mock_iam
+    def test_checkout_exception(self):
+        """Test exception from create IAM account is handled properly."""
+        self.c.login(username=self.user.username, password='str0ngpa$$w0rd')
+
+        # Test create IAM account exception handled
+        with self.settings(AWS_ACCOUNT_ID_ALIAS=None,
+                           AWS_IAM_GROUP='test-group'):
+            with patch.object(AmazonAccountUtils,
+                              '_cleanup_iam_user',
+                              return_value=True):
+                response = self.c.get(reverse('library:checkout',
+                                              args=['amazondemoaccount']),
+                                      follow=True)
+
+        # Confirm error message displayed
+        message = list(response.context['messages'])[0].message
+        self.assertEqual(message,
+                         "An error occurred (Not Found) when calling the "
+                         "AddUserToGroup operation: Group test-group not "
+                         "found")
+
+        # Confirm lendable not created
+        self.assertEqual(Lendable.all_types.count(), 0)
+
+    @mock_iam
+    def test_destroy_account_not_exist(self):
+        with patch.object(AmazonAccountUtils,
+                          '_cleanup_iam_user',
+                          return_value=True):
+            amazon_account_utils = AmazonAccountUtils(
+                '43543253245',
+                '6543654rfdfds'
+            )
+            result = amazon_account_utils.destroy_iam_account('fake-user')
+
+        self.assertFalse(result)

@@ -2,3 +2,4 @@
 django-debug-toolbar
 flake8
 coverage
+moto

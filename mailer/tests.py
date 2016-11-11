@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with openbare. If not, see <http://www.gnu.org/licenses/>.
 
+from unittest.mock import patch
+
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.core import mail
@@ -128,8 +130,31 @@ class SendMailTestCase(TestCase):
                          'Email not sent.')
         self.assertEqual(len(mail.outbox), 0)
 
-        # Test send email
+        # Test specific lendable endpoint
+        context['lendable'] = 'amazondemoaccount'
+        response = self.c.post('/mail/send/', context)
+        messages = list(response.context['messages'])
+
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(messages[0].message,
+                         'No users match the current filters. '
+                         'Email not sent.')
+        self.assertEqual(len(mail.outbox), 0)
+
+        # Change context to arg to send email to all users
         context['to'] = 'all'
+
+        # Test email_users handles generic exception
+        with patch.object(mail.EmailMessage,
+                          'send',
+                          side_effect=Exception('Send email Failed!')):
+            response = self.c.post('/mail/send/', context, follow=True)
+
+        # Confirm error message displayed
+        message = list(response.context['messages'])[0].message
+        self.assertEqual(message, 'Failed to send email: Send email Failed!')
+
+        # Test send email
         response = self.c.post('/mail/send/', context, follow=True)
         messages = list(response.context['messages'])
 
