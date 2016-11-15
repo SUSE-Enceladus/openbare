@@ -1,3 +1,3 @@
 $(document).ready(function(){
-  $('#checkout_credentials').modal('show');
+  $("#checkout_credentials").modal("show");
 });
