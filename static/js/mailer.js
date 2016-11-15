@@ -15,34 +15,34 @@
 // You should have received a copy of the GNU General Public License
 // along with openbare. If not, see <http://www.gnu.org/licenses/>.
 
-$(document).ready(function() {
-    var to_choice = document.getElementById("id_to");
-
-    // Add toggle function to mail to choice select widget.
-    to_choice.addEventListener("change", function() {
-        toggle_lendable_choices(to_choice.value, 100);
-    });
-
-    // Toggle lendable choices with no transition on page load.
-    toggle_lendable_choices(to_choice.value, 0);
-
-    // When send mail clicked from modal submit form.
-    $("#id_send_mail_btn").click(function() {
-        $("#id_mail_form").submit();
-    });
-});
-
-function toggle_lendable_choices(value, duration) {
+function toggleLendableChoices(value, duration) {
     /*
     * Toggle the lendable choices select widget. If haslendable
     * option of mail to choices is selected, lendable select is
     * visible and required.
     */
 
-    if(value == "haslendable") {
+    if(value === "haslendable") {
         $("#id_lendable").show(duration);
     }
     else {
         $("#id_lendable").hide(duration);
     }
 }
+
+$(document).ready(function() {
+    var toChoice = document.getElementById("id_to");
+
+    // Add toggle function to mail to choice select widget.
+    toChoice.addEventListener("change", function() {
+        toggleLendableChoices(toChoice.value, 100);
+    });
+
+    // Toggle lendable choices with no transition on page load.
+    toggleLendableChoices(toChoice.value, 0);
+
+    // When send mail clicked from modal submit form.
+    $("#id_send_mail_btn").click(function() {
+        $("#id_mail_form").submit();
+    });
+});

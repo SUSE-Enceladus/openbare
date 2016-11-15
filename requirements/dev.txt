@@ -1,0 +1,5 @@
+-r base.txt
+django-debug-toolbar
+flake8
+coverage
+moto

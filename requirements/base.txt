@@ -1,0 +1,6 @@
+Django~=1.10.0
+python-social-auth
+django-markdown-deux
+django-split-settings
+boto3
+Unidecode

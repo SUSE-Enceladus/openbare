@@ -27,6 +27,9 @@ ALLOWED_HOSTS = ['openbare.yourdomain.com']
 # What address will error mails be sent from?
 SERVER_EMAIL = 'server@' + ALLOWED_HOSTS[0]
 
+# Subject prefix for emails sent from server
+EMAIL_SUBJECT_PREFIX = '[openbare] '
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 

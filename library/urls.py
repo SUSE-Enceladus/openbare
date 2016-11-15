@@ -1,3 +1,5 @@
+"""URLs for library app."""
+
 # Copyright © 2016 SUSE LLC, James Mason <jmason@suse.com>.
 #
 # This file is part of openbare.
@@ -19,23 +21,24 @@ from django.conf.urls import url
 
 from . import views
 
+app_name = 'library'
 urlpatterns = [
-    url(r'^$', views.index, name='index'),
+    url(r'^$', views.IndexView.as_view(), name='index'),
     url(r'^resource/(?P<item_subtype>\w+)/checkout$',
-        views.checkout,
+        views.CheckoutView.as_view(),
         name='checkout'
-    ),
+        ),
     url(r'^instance/(?P<primary_key>\d+)/renew$',
         views.renew,
         name='renew'
-    ),
+        ),
     url(r'^instance/(?P<primary_key>\d+)/checkin$',
         views.checkin,
         name='checkin'
-    ),
+        ),
     url(r'^instance/(?P<primary_key>\d+)/request_extension$',
         views.request_extension,
         name='request_extension'
-    )
+        ),
+    url(r'^login/required/$', views.require_login, name='require_login')
 ]
-

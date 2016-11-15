@@ -14,8 +14,10 @@ bin/
 build/
 develop-eggs/
 dist/
+include/
 eggs/
 lib/
+lib64
 lib64/
 parts/
 sdist/
@@ -28,6 +30,7 @@ var/
 .tox/
 .coverage
 .cache
+htmlcov/
 nosetests.xml
 coverage.xml
 
@@ -41,3 +44,9 @@ Session.vim
 # temporary
 .netrwhist
 *i~
+
+### PyCharm ###
+.idea/
+
+### pip ###
+pip-selfcheck.json

@@ -1,4 +1,5 @@
 {% extends 'library/base.html' %}
+{% load staticfiles %}
 {% load markdown_deux_tags %}
 {% load formatting_filters %}
 
@@ -313,6 +314,8 @@
   {% endif %}
 {% endblock %}
 
-{% block js %}
-  $('#checkout_credentials').modal('show');
+{% block js_include %}
+  {% if checkout %}
+    <script src="{% static 'js/checkout.js' %}"></script>
+  {% endif %}
 {% endblock %}

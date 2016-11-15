@@ -1,5 +1,5 @@
 Django Library System - openbare
-=================================================
+================================
 
 openbare is a digital asset library system, implemented on Django.
 
@@ -16,19 +16,28 @@ We'd like to thank SUSE for sponsoring our work and enabling us to set up the
 project in a company independent way.
 
 
-Dependencies
-------------
+## Dependencies
 
 * python > 3.2
-* Django ~ 1.8.4
+* Django ~= 1.10.0
 * python-social-auth
-* django-debug-toolbar
 * django-markdown-deux
 * django-split-settings
 * boto3
+* unidecode
 
-For openSUSE and SUSE Linux Enterprise
---------------------------------------
+### Optional for development
+
+* django-debug-toolbar
+* flake8
+* coverage
+* moto
+
+
+## Setting up a development environment
+
+#### For openSUSE and SUSE Linux Enterprise
+
 *   Add a repository from OBS
     [devel:languages:python3](https://build.opensuse.org/project/show/devel:languages:python3)
     appropriate for your distribution to your system.
@@ -37,11 +46,29 @@ For openSUSE and SUSE Linux Enterprise
     ```
     zypper in python3-Django python3-python-social-auth \
       python3-django-debug-toolbar python3-django-markdown-deux \
-      python3-django-split-settings python3-boto3
+      python3-django-split-settings python3-boto3 python3-Unidecode \
+      python3-coverage
     ```
 
-Initializing your development environment
------------------------------------------
+#### Alternative: Using pip and/or virtualenv
+
+See the [python-guide](http://docs.python-guide.org/en/latest/dev/virtualenvs/) 
+for setting up and activating a virtualenv.
+
+##### Install dependencies
+
+```
+pip install -r requirements/dev.txt
+```
+
+### Initializing your environment
+
+1. Fork openbare to your GitHub account
+
+1. Clone the repository
+    ```
+    git clone git@github.com:{username}/openbare.git
+    ```
 
 1.  Get in position
     ```
@@ -68,30 +95,8 @@ Initializing your development environment
 
     Browse to `http://localhost:8000`
 
-1.  Log into the admin interface and create a resource.
 
-  1.  Browse to `http://localhost:8000/admin/library/resource` .
-      You will be redirected to the login page.
-  2.  Log in with the superuser credentials you created when you setup the database.
-  3.  Click 'Add resource'
-  4.  Fill out the form, and click 'Save'
-
-
-Versions & Releases
--------------------
-
-*openbare* adherese to Semantic versioning; see http://semver.org/ for details.
-
-[*bumpversion*](https://pypi.python.org/pypi/bumpversion/) is used for release
-version management, and configured in `setup.cfg`:
-
-```
-# bumpversion major|minor|patch
-# git push && git push --tags
-```
-
-Setting up a production instance with Apache and Postrgres on SLES 12 SP1
--------------------------------------------------------------------------
+## Setting up a production instance with Apache and Postrgres on SLES 12 SP1
 
 1.  As root...
     ```
@@ -115,55 +120,67 @@ Setting up a production instance with Apache and Postrgres on SLES 12 SP1
     ```
     systemctl enable postgresql
     systemctl start postgresql
+    
     su - postgres
     createdb openbare
+    
     psql
     CREATE ROLE openbare WITH PASSWORD "[secret-database-password]";
     ALTER ROLE openbare WITH LOGIN;
     CREATE DATABASE openbare WITH OWNER openbare;
     GRANT ALL PRIVILEGES ON DATABASE openbare TO openbare;
     \q
+    
     logout
     ```
 
 1.  Setup Apache
     ```
-    edit /etc/sysconfig/apache2 # add 'wsgi' to APACHE_MODULES
-    # verify
+    # Add 'wsgi' to APACHE_MODULES
+    edit /etc/sysconfig/apache2
+    
+    # Verify
     apachectl -M | grep wsgi
-    # create a new config
+    
+    # Create a new config
     mv /etc/apache2/default-server.conf /etc/apache2/default-server.conf.orig
     echo "
+    
     # Static Assets
     ## directly serve admin assets from the django module
     Alias /static/admin /usr/lib/python3.4/site-packages/django/contrib/admin/static/admin
+    
     ## directly serve openbare's assets
     Alias /static /srv/www/openbare/static
     <Directory /usr/lib/python3.4/site-packages/django/contrib/admin/static/admin>
-    Require all granted
-    Options FollowSymLinks
+      Require all granted
+      Options FollowSymLinks
     </Directory>
     <Directory /srv/www/openbare/static>
-    Require all granted
-    Options FollowSymLinks
+      Require all granted
+      Options FollowSymLinks
     </Directory>
 
     # Setup WSGI server
     WSGIScriptAlias / /srv/www/openbare/openbare/wsgi.py
     WSGIPythonPath /srv/www/openbare
     <Directory /srv/www/openbare>
-    <Files wsgi.py>
-    Require all granted
-    </Files>
+      <Files wsgi.py>
+        Require all granted
+      </Files>
     </Directory>
+    
     " > /etc/apache2/default-server.conf
+    
     systemctl enable apache2
     ```
 
 1.  Configure openbare
     ```
     for file in /etc/openbare/settings_*.py.template; do cp "$file" "${file%.template}"; done
+    
     edit /etc/openbare/settings_*.py
+    
     openbare-manage migrate
     openbare-manage createsuperuser
     ```
@@ -173,8 +190,87 @@ Setting up a production instance with Apache and Postrgres on SLES 12 SP1
     systemctl start apache2
     ```
 
-Useful Links
-------------
+
+## Lendable Resources
+
+### AWS IAM Accounts
+
+The AWS resource allows users to checkout IAM credentials for use with 
+Amazon Web Services. The IAM accounts are checked out using the 
+credential information provided in the Django settings files. To enable 
+access for AWS the following settings should be updated with the 
+correct account information:
+
+```
+# Amazon Web Services API credentials
+AWS_ACCESS_KEY_ID = ''
+AWS_SECRET_ACCESS_KEY = ''
+AWS_ACCOUNT_ID_ALIAS = ''
+
+# Optional: Users are added to the following IAM group
+AWS_IAM_GROUP = ''
+```
+
+### Adding a resource
+
+All resources are proxy classes extending from the Lendable model. To 
+add a resource for *openbare* override the name/description values and 
+the checkout/checkin methods.
+
+Optionally, the _set_username and _validate_username methods can be 
+overridden to provide resource specific username validation.
+
+## Contributing
+
+If you would like to make contributions to *openbare* please fork the 
+code on GitHub and submit a pull request with your changes. Please 
+submit an issue if you experience any problems, bugs or have 
+enhancement requests. See below for more information on code format, 
+testing and release versions.
+
+### Code format and testing
+
+*openbare* uses flake8 formatting for code consistency. Prior to a pull 
+request run flake8 to ensure there are no warnings.
+
+```
+flake8                     # To check the entire project
+flake8 libarary/models.py  # To check a specific file
+```
+
+Additionally, all code changes and additions require unit tests. Pull 
+requests should maintain the current code coverage and all tests must 
+pass.
+
+```
+python manage.py test
+```
+
+To check code coverage in Django run the following commands:
+
+```
+coverage run --source='.' manage.py test  # Run unit tests
+coverage report                           # Generate report
+coverage html                             # Generate HTML report
+```
+
+More information can be found on [readthedocs](https://coverage.readthedocs.io/en/coverage-4.2/) 
+for the coverage package.
+
+### Versions & Releases
+
+*openbare* adheres to Semantic versioning; see http://semver.org/ for details.
+
+[*bumpversion*](https://pypi.python.org/pypi/bumpversion/) is used for release
+version management, and configured in `setup.cfg`:
+
+```
+# bumpversion major|minor|patch
+# git push && git push --tags
+```
+
+
+## Useful Links
 
 * Getting started with Django: https://www.djangoproject.com/start/
 * About Python 3: https://docs.djangoproject.com/en/1.8/topics/python3/
@@ -182,3 +278,9 @@ Useful Links
 * Twitter Bootstrap UI framework: http://getbootstrap.com/getting-started/
 * 'Yeti' theme: http://bootswatch.com/yeti/
 * FontAwesome icons: http://fontawesome.io/examples/ http://fontawesome.io/cheatsheet/
+
+
+## License
+
+This project is licensed under the GNU General Public License - see the 
+[LICENSE](LICENSE) file for details.
