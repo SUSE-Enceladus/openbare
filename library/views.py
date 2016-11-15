@@ -248,14 +248,6 @@ def get_items_checked_out_by(user=None):
     return Lendable.all_types.filter(user=user).order_by('checked_out_on')
 
 
-def _verify_user(user=None):
-    warnings.warn('_verify_user is deprecated and will be removed.'
-                  ' Use login_required instead.', DeprecationWarning)
-
-    if not user or user.is_anonymous:
-        raise Http404
-
-
 def _admin_emails():
     return ["%s <%s>" % (admin[0], admin[1]) for admin in settings.ADMINS]
 
