@@ -24,7 +24,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
-from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.template.defaultfilters import slugify
 from django.views.generic.base import TemplateView
@@ -32,7 +31,6 @@ from django.views.generic.base import TemplateView
 import base64
 import json
 import logging
-import warnings
 
 from .templatetags import formatting_filters
 from .models import Lendable
