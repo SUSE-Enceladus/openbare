@@ -31,7 +31,6 @@ project in a company independent way.
 * django-debug-toolbar
 * flake8
 * coverage
-* moto
 
 
 ## Setting up a development environment
