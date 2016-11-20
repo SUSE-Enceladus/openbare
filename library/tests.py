@@ -24,12 +24,13 @@ from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import Client, RequestFactory, TestCase
 
-from .models import AmazonDemoAccount, Lendable
-from .views import get_items_checked_out_by, get_lendable_resources, IndexView
+from library.models import AmazonDemoAccount, Lendable
+from library.views import (get_items_checked_out_by, get_lendable_resources,
+                           IndexView)
 
 from library.amazon_account_utils import AmazonAccountUtils
-from library.mock_tests.aws_endpoints import AWSMock
-from library.mock_tests.constants import fake_user_name
+from library.mock_aws.aws_endpoints import AWSMock
+from library.mock_aws.constants import fake_user_name
 
 
 class LibraryTestCase(TestCase):
@@ -177,6 +178,15 @@ class LibraryTestCase(TestCase):
 
         lendables = get_items_checked_out_by(AnonymousUser())
         self.assertEqual(lendables, [])
+
+    def test_username_generated(self):
+        self.lendable = Lendable(user=self.user)
+
+        # Test random username is generated when len(username) > 321.
+        self.user.username = 'a' * 322
+        self.lendable._set_username()
+        self.assertNotEqual(self.lendable.username, self.user.username)
+        self.assertEqual(len(self.lendable.username), 20)
 
 
 class AWSTestCase(TestCase):
