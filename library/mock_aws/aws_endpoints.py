@@ -125,7 +125,9 @@ class AWSMock(object):
     def create_user(self, kwarg):
         """Create user if user does not exist and username is not fake."""
         if kwarg[username] in self.users or kwarg[username] == fake_user_name:
-            raise client_error('CreateUser', 'Error', 'User creation failed')
+            raise client_error('CreateUser',
+                               '409',
+                               'User %s exists' % kwarg[username])
 
         self.users[kwarg[username]] = User(kwarg[username])
         return user_response(kwarg[username])
@@ -156,7 +158,9 @@ class AWSMock(object):
         """Delete group if group exists."""
         group = self.groups.pop(kwarg[group_name], None)
         if not group:
-            raise client_error('DeleteGroup', '404', 'Group not found')
+            raise client_error('DeleteGroup',
+                               '404',
+                               'Group %s not found' % kwarg[group_name])
 
         return delete_response()
 
@@ -215,7 +219,9 @@ class AWSMock(object):
     def list_access_keys(self, kwarg):
         """List all of the users access keys if user exists."""
         if kwarg[username] not in self.users:
-            raise client_error('ListAccessKeys', '404', 'User not found')
+            raise client_error('ListAccessKeys',
+                               '404',
+                               'User %s not found' % kwarg[username])
 
         keys = self.users[kwarg[username]].access_keys
         return list_access_keys_response(kwarg[username], keys)
@@ -225,7 +231,7 @@ class AWSMock(object):
         if kwarg[username] not in self.users:
             raise client_error('ListAttachedUserPolicies',
                                '404',
-                               'User not found')
+                               'User %s not found' % kwarg[username])
 
         policies = self.users[kwarg[username]].attached_policies
         return list_attached_policies_response(policies)
@@ -233,7 +239,9 @@ class AWSMock(object):
     def list_groups_for_user(self, kwarg):
         """List all of the users groups if user exists."""
         if kwarg[username] not in self.users:
-            raise client_error('ListGroupsForUser', '404', 'User not found')
+            raise client_error('ListGroupsForUser',
+                               '404',
+                               'User %s not found' % kwarg[username])
 
         groups = self.users[kwarg[username]].groups
         return list_user_groups_response(groups)
@@ -241,7 +249,9 @@ class AWSMock(object):
     def list_mfa_devices(self, kwarg):
         """List all of the users MFA devices if user exists."""
         if kwarg[username] not in self.users:
-            raise client_error('ListMFADevices', '404', 'User not found')
+            raise client_error('ListMFADevices',
+                               '404',
+                               'User %s not found' % kwarg[username])
 
         devices = self.users[kwarg[username]].mfa_devices
         return list_mfa_devices_response(kwarg[username], devices)
@@ -251,7 +261,7 @@ class AWSMock(object):
         if kwarg[username] not in self.users:
             raise client_error('ListSigningCertificates',
                                '404',
-                               'User not found')
+                               'User %s not found' % kwarg[username])
 
         certs = self.users[kwarg[username]].signing_certs
         return list_signing_certs_response(kwarg[username], certs)
@@ -259,7 +269,9 @@ class AWSMock(object):
     def remove_user_from_group(self, kwarg):
         """Remove user from group if user exists."""
         if kwarg[username] not in self.users:
-            raise client_error('RemoveUserFromGroup', '404', 'User not found')
+            raise client_error('RemoveUserFromGroup',
+                               '404',
+                               'User %s not found' % kwarg[username])
 
         self.users[kwarg[username]].groups.pop(kwarg[group_name], None)
         return delete_response()

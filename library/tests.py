@@ -369,8 +369,8 @@ class AWSTestCase(TestCase):
         # Confirm error message displayed
         message = list(response.context['messages'])[0].message
         self.assertEqual(message,
-                         "An error occurred (Error) when calling the "
-                         "CreateUser operation: User creation failed")
+                         "An error occurred (409) when calling the "
+                         "CreateUser operation: User fakeuser exists")
 
         # Confirm lendable not created
         self.assertEqual(Lendable.all_types.count(), 0)

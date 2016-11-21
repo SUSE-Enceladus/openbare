@@ -58,7 +58,7 @@ class AWSMockTestCase(TestCase):
     def test_list_user_groups_exception(self):
         """Test list non existent user groups raises exception."""
         msg = 'An error occurred (404) when calling the ' \
-              'ListGroupsForUser operation: User not found'
+              'ListGroupsForUser operation: User John not found'
 
         try:
             # Assert list non existent user groups exception
@@ -99,8 +99,8 @@ class AWSMockTestCase(TestCase):
         except ClientError as e:
             self.assertEqual(msg, str(e))
 
-        msg = 'An error occurred (Error) when calling the CreateUser' \
-              ' operation: User creation failed'
+        msg = 'An error occurred (409) when calling the CreateUser' \
+              ' operation: User John exists'
 
         try:
             # Assert create user exists raises exception
@@ -145,7 +145,7 @@ class AWSMockTestCase(TestCase):
     def test_delete_group_exception(self):
         """Test delete non existent group raises exception."""
         msg = 'An error occurred (404) when calling the DeleteGroup' \
-              ' operation: Group not found'
+              ' operation: Group Admins not found'
 
         try:
             # Assert delete non existent user exception
@@ -156,7 +156,7 @@ class AWSMockTestCase(TestCase):
     def test_remove_user_group_exception(self):
         """Test remove non existent user from group raises exception."""
         msg = 'An error occurred (404) when calling the RemoveUserFromGroup' \
-              ' operation: User not found'
+              ' operation: User John not found'
 
         try:
             # Assert remove non existent user from group exception
@@ -192,7 +192,7 @@ class AWSMockTestCase(TestCase):
     def test_list_access_key_exception(self):
         """Test list access keys for non existent user raises exception."""
         msg = 'An error occurred (404) when calling the ListAccessKeys' \
-              ' operation: User not found'
+              ' operation: User John not found'
 
         try:
             # Assert list access keys for non existent user exception
@@ -287,7 +287,7 @@ class AWSMockTestCase(TestCase):
     def test_list_mfa_device_exception(self):
         """Test list mfa devices for non existent user raises exception."""
         msg = 'An error occurred (404) when calling the ListMFADevices' \
-              ' operation: User not found'
+              ' operation: User John not found'
 
         try:
             # Assert list mfa devices for non existent user exception
@@ -334,7 +334,7 @@ class AWSMockTestCase(TestCase):
     def test_list_signing_certificates_exception(self):
         """Test list signing certs for non existent user raises exception."""
         msg = 'An error occurred (404) when calling the ' \
-              'ListSigningCertificates operation: User not found'
+              'ListSigningCertificates operation: User John not found'
 
         try:
             # Assert list signing certs for non existent user exception
@@ -380,7 +380,7 @@ class AWSMockTestCase(TestCase):
     def test_list_attached_user_policies_exception(self):
         """Test list user policies for non existent user raises exception."""
         msg = 'An error occurred (404) when calling the ' \
-              'ListAttachedUserPolicies operation: User not found'
+              'ListAttachedUserPolicies operation: User John not found'
 
         try:
             # Assert list user policies for non existent user exception
