@@ -31,5 +31,6 @@ def bootstrap_alert_class(message_level):
     }
     return classes_for_levels.setdefault(message_level, '')
 
+
 register = template.Library()
 register.filter('bootstrap_alert_class', bootstrap_alert_class)
