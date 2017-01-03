@@ -29,7 +29,7 @@ Requires:       python3-python-social-auth
 Requires:       python3-django-markdown-deux
 Requires:       python3-django-split-settings
 Requires:       python3-boto3
-Requires:       python3-unidecode
+Requires:       python3-Unidecode
 BuildRequires:  fdupes
 Recommends:     python3-coverage
 Recommends:     python3-django-debug-toolbar
