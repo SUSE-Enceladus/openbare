@@ -29,6 +29,7 @@ DEBUG = True
 # Application definition
 
 INSTALLED_APPS += ('debug_toolbar', )
+MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware', )
 
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
@@ -87,3 +88,20 @@ EXPIRATION_NOTIFICATION_WARNING_DAYS = [1]
 AWS_ACCESS_KEY_ID = ''
 AWS_SECRET_ACCESS_KEY = ''
 AWS_IAM_GROUP = ''
+
+# Template string for expiration warning message
+EXPIRATION_WARNING_EMAIL_TEMPLATE = """
+Hi {firstname}!
+
+You have an item checked out via openbare that's going to expire soon.
+
+'{lendable}' is due on '{due_on}'. Unless you renew it or request an
+extension, the item will automatically be returned, and we'll clean up any
+mess you left.
+
+If you'd like to take some action, you can visit openbare at:
+{primary_url}
+
+Have a great day!
+- Your openbare Admins
+"""
