@@ -1,0 +1,38 @@
+# Copyright © 2017 SUSE LLC, James Mason <jmason@suse.com>.
+#
+# This file is part of openbare.
+#
+# openbare is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# openbare is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with openbare. If not, see <http://www.gnu.org/licenses/>.
+
+# Template string for expiration warning message
+# Available substitution variables:
+#   {firstname}   : User's first name
+#   {lendable}    : Human-readable title of lendable
+#   {due_on}      : DateTime the lendable is due
+#   {primary_url} : Openbare primary URL - from settings_base
+EXPIRATION_WARNING_EMAIL_TEMPLATE = """
+Hi {firstname}!
+
+You have an item checked out via openbare that's going to expire soon.
+
+'{lendable}' is due on '{due_on}'. Unless you renew it or request an
+extension, the item will automatically be returned, and we'll clean up any
+mess you left.
+
+If you'd like to take some action, you can visit openbare at:
+{primary_url}
+
+Have a great day!
+- Your openbare Admins
+"""

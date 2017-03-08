@@ -47,21 +47,7 @@ def checkin_expired_accounts():
 
 
 def get_warning_message(lendable):
-    return """
-Hi {firstname}!
-
-You have an item checked out via openbare that's going to expire soon.
-
-'{lendable}' is due on '{due_on}'. Unless you renew it or request an
-extension, the item will automatically be returned, and we'll clean up any
-mess you left.
-
-If you'd like to take some action, you can visit openbare at:
-{primary_url}
-
-Have a great day!
-- Your openbare Admins
-""".format(
+    return settings.EXPIRATION_WARNING_EMAIL_TEMPLATE.format(
         firstname=lendable.user.first_name,
         lendable=lendable,
         due_on=lendable.due_on,
