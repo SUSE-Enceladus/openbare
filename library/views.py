@@ -34,6 +34,7 @@ import logging
 
 from .templatetags import formatting_filters
 from .models import Lendable
+from .models import FrontpageMessage
 
 
 class IndexView(TemplateView):
@@ -53,6 +54,7 @@ class IndexView(TemplateView):
         context['user_items'] = get_items_checked_out_by(self.request.user)
         context['checkout'] = False
         context['host'] = settings.HOST
+        context['frontpage_messages'] = FrontpageMessage.objects.all()
 
         return context
 

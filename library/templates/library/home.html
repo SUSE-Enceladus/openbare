@@ -52,18 +52,11 @@
           <dd>
             This openbare instance is operated by
             <a href="{{ host.url }}" target="_blank">{{ host.name }}</a>.
-            {% if host.payment_statement %}
-              Any costs associated with the digital assets provided through this
-              <i>openbare</i> instance are handled as follows:
-              <blockquote>{{ host.payment_statement }}</blockquote>
-            {% endif %}
           </dd>
-          {% if host.use_statement %}
-            <dt>Please note the following usage guidelines</dt>
-            <dd>
-            <blockquote>{{ host.use_statement }}</blockquote>
-            </dd>
-          {% endif %}
+          {% for message in frontpage_messages %}
+            <dt>{{ message.title }}</dt>
+            <dd>{{ message.body|linebreaks }}</dd>
+          {% endfor %}
           <dt>Is <i>openbare</i> open source?</dt>
           <dd>
             Yes! <i>openbare</i> is licensed under the GPLv3 license. You may

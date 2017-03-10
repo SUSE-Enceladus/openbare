@@ -234,3 +234,17 @@ cloud gives you access to a massive volume of resources on-demand.
         """
         return re.match('^[\w.@+=,-]+$', self.username) and \
             65 > len(self.username) > 1
+
+class FrontpageMessage(models.Model):
+    rank = models.IntegerField(
+        default=0,
+        help_text='Messages are ordered by rank when listed on the front page',
+        blank=False
+    )
+    title = models.CharField(max_length=254, blank=False)
+    body = models.TextField(blank=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['rank', '-updated_at']

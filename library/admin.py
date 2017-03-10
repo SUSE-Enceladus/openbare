@@ -19,6 +19,7 @@
 
 from django.contrib import admin
 from library.models import Lendable
+from library.models import FrontpageMessage
 
 
 class LendableAdmin(admin.ModelAdmin):
@@ -27,5 +28,11 @@ class LendableAdmin(admin.ModelAdmin):
     list_display = ('pk', '__str__')
     readonly_fields = ('type', 'user', 'username', 'notify_timer')
 
+class FrontpageMessageAdmin(admin.ModelAdmin):
+    """List frontpage messages by rank and title"""
+
+    list_display = ('pk', 'rank', 'title')
+    readonly_fields = ('created_at', 'updated_at')
 
 admin.site.register(Lendable, LendableAdmin)
+admin.site.register(FrontpageMessage, FrontpageMessageAdmin)
