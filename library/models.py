@@ -33,6 +33,8 @@ from library.amazon_account_utils import AmazonAccountUtils
 
 from unidecode import unidecode
 
+from simple_history.models import HistoricalRecords
+
 
 # http://schinckel.net/2013/07/28/django-single-table-inheritance-on-the-cheap./
 class ProxyManager(models.Manager):
@@ -246,6 +248,7 @@ class FrontpageMessage(models.Model):
     body = models.TextField(blank=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True, db_index=True)
+    history = HistoricalRecords()
 
     class Meta:
         ordering = ['rank', '-updated_at']

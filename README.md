@@ -23,6 +23,7 @@ project in a company independent way.
 * python-social-auth
 * django-markdown-deux
 * django-split-settings
+* django-simple-history
 * boto3
 * unidecode
 
@@ -47,6 +48,8 @@ project in a company independent way.
       python3-django-debug-toolbar python3-django-markdown-deux \
       python3-django-split-settings python3-boto3 python3-Unidecode \
       python3-coverage
+
+    sudo pip install django-simple-history
     ```
 
 #### Alternative: Using pip and/or virtualenv
