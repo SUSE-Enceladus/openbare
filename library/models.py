@@ -239,12 +239,13 @@ class FrontpageMessage(models.Model):
     rank = models.IntegerField(
         default=0,
         help_text='Messages are ordered by rank when listed on the front page',
-        blank=False
+        blank=False,
+        db_index=True
     )
     title = models.CharField(max_length=254, blank=False)
     body = models.TextField(blank=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True, db_index=True)
 
     class Meta:
         ordering = ['rank', '-updated_at']
