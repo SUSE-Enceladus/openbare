@@ -42,27 +42,13 @@
       <div class="col-md-12">
         <h2>Welcome!</h2>
         <dl>
-          <dt>What is <i>openbare</i>?</dt>
-          <dd>
-            <i>openbare</i> is a digital asset library system. Digital assets,
-            such as online accounts, e-books or software subscriptions can be
-            made available for 'check out', similar to physical libraries.
-          </dd>
-          <dt>Who's providing this?</dt>
-          <dd>
-            This openbare instance is operated by
-            <a href="{{ host.url }}" target="_blank">{{ host.name }}</a>.
-          </dd>
           {% for message in frontpage_messages %}
             <dt>{{ message.title }}</dt>
             <dd>{{ message.body|linebreaks }}</dd>
           {% endfor %}
-          <dt>Is <i>openbare</i> open source?</dt>
+          <dt>License</dt>
           <dd>
-            Yes! <i>openbare</i> is licensed under the GPLv3 license. You may
-            view the source, file any bugs or enhancement requests, or
-            help improve <i>openbare</i> through our github project:
-            <a href="https://github.com/openbare/openbare">https://github.com/openbare/openbare</a>
+            <i>openbare</i> is licensed under the GPLv3 license. Please file issues or send contributions on GitHub: <a href="https://github.com/openbare/openbare">https://github.com/openbare/openbare</a>.
           </dd>
         </dl>
       </div>
