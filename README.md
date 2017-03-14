@@ -1,6 +1,8 @@
 Django Library System - openbare
 ================================
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/20f6f3f39caf4bfebf280cf30c6b1f5b)](https://www.codacy.com/app/default-org/openbare?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=openbare/openbare&amp;utm_campaign=Badge_Grade)
+
 openbare is a digital asset library system, implemented on Django.
 
 The system started out with the intend to provide access to Public Cloud
