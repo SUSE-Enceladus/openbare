@@ -23,6 +23,7 @@ project in a company independent way.
 * python-social-auth
 * django-markdown-deux
 * django-split-settings
+* django-simple-history
 * boto3
 * unidecode
 
@@ -47,11 +48,13 @@ project in a company independent way.
       python3-django-debug-toolbar python3-django-markdown-deux \
       python3-django-split-settings python3-boto3 python3-Unidecode \
       python3-coverage
+
+    sudo pip install django-simple-history
     ```
 
 #### Alternative: Using pip and/or virtualenv
 
-See the [python-guide](http://docs.python-guide.org/en/latest/dev/virtualenvs/) 
+See the [python-guide](http://docs.python-guide.org/en/latest/dev/virtualenvs/)
 for setting up and activating a virtualenv.
 
 ##### Install dependencies
@@ -84,6 +87,7 @@ pip install -r requirements/dev.txt
 1.  Setup the database
     ```
     python3 manage.py migrate
+    python3 manage.py loaddata
     python3 manage.py createsuperuser
     ```
 
@@ -119,17 +123,17 @@ pip install -r requirements/dev.txt
     ```
     systemctl enable postgresql
     systemctl start postgresql
-    
+
     su - postgres
     createdb openbare
-    
+
     psql
     CREATE ROLE openbare WITH PASSWORD "[secret-database-password]";
     ALTER ROLE openbare WITH LOGIN;
     CREATE DATABASE openbare WITH OWNER openbare;
     GRANT ALL PRIVILEGES ON DATABASE openbare TO openbare;
     \q
-    
+
     logout
     ```
 
@@ -137,18 +141,18 @@ pip install -r requirements/dev.txt
     ```
     # Add 'wsgi' to APACHE_MODULES
     edit /etc/sysconfig/apache2
-    
+
     # Verify
     apachectl -M | grep wsgi
-    
+
     # Create a new config
     mv /etc/apache2/default-server.conf /etc/apache2/default-server.conf.orig
     echo "
-    
+
     # Static Assets
     ## directly serve admin assets from the django module
     Alias /static/admin /usr/lib/python3.4/site-packages/django/contrib/admin/static/admin
-    
+
     ## directly serve openbare's assets
     Alias /static /srv/www/openbare/static
     <Directory /usr/lib/python3.4/site-packages/django/contrib/admin/static/admin>
@@ -168,18 +172,18 @@ pip install -r requirements/dev.txt
         Require all granted
       </Files>
     </Directory>
-    
+
     " > /etc/apache2/default-server.conf
-    
+
     systemctl enable apache2
     ```
 
 1.  Configure openbare
     ```
     for file in /etc/openbare/settings_*.py.template; do cp "$file" "${file%.template}"; done
-    
+
     edit /etc/openbare/settings_*.py
-    
+
     openbare-manage migrate
     openbare-manage createsuperuser
     ```
@@ -194,10 +198,10 @@ pip install -r requirements/dev.txt
 
 ### AWS IAM Accounts
 
-The AWS resource allows users to checkout IAM credentials for use with 
-Amazon Web Services. The IAM accounts are checked out using the 
-credential information provided in the Django settings files. To enable 
-access for AWS the following settings should be updated with the 
+The AWS resource allows users to checkout IAM credentials for use with
+Amazon Web Services. The IAM accounts are checked out using the
+credential information provided in the Django settings files. To enable
+access for AWS the following settings should be updated with the
 correct account information:
 
 ```
@@ -212,24 +216,24 @@ AWS_IAM_GROUP = ''
 
 ### Adding a resource
 
-All resources are proxy classes extending from the Lendable model. To 
-add a resource for *openbare* override the name/description values and 
+All resources are proxy classes extending from the Lendable model. To
+add a resource for *openbare* override the name/description values and
 the checkout/checkin methods.
 
-Optionally, the _set_username and _validate_username methods can be 
+Optionally, the _set_username and _validate_username methods can be
 overridden to provide resource specific username validation.
 
 ## Contributing
 
-If you would like to make contributions to *openbare* please fork the 
-code on GitHub and submit a pull request with your changes. Please 
-submit an issue if you experience any problems, bugs or have 
-enhancement requests. See below for more information on code format, 
+If you would like to make contributions to *openbare* please fork the
+code on GitHub and submit a pull request with your changes. Please
+submit an issue if you experience any problems, bugs or have
+enhancement requests. See below for more information on code format,
 testing and release versions.
 
 ### Code format and testing
 
-*openbare* uses flake8 formatting for code consistency. Prior to a pull 
+*openbare* uses flake8 formatting for code consistency. Prior to a pull
 request run flake8 to ensure there are no warnings.
 
 ```
@@ -237,8 +241,8 @@ flake8                     # To check the entire project
 flake8 libarary/models.py  # To check a specific file
 ```
 
-Additionally, all code changes and additions require unit tests. Pull 
-requests should maintain the current code coverage and all tests must 
+Additionally, all code changes and additions require unit tests. Pull
+requests should maintain the current code coverage and all tests must
 pass.
 
 ```
@@ -253,7 +257,7 @@ coverage report                           # Generate report
 coverage html                             # Generate HTML report
 ```
 
-More information can be found on [readthedocs](https://coverage.readthedocs.io/en/coverage-4.2/) 
+More information can be found on [readthedocs](https://coverage.readthedocs.io/en/coverage-4.2/)
 for the coverage package.
 
 ### Versions & Releases
@@ -281,5 +285,5 @@ version management, and configured in `setup.cfg`:
 
 ## License
 
-This project is licensed under the GNU General Public License - see the 
+This project is licensed under the GNU General Public License - see the
 [LICENSE](LICENSE) file for details.

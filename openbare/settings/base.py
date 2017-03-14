@@ -50,6 +50,7 @@ INSTALLED_APPS = (
     'markdown_deux',
     'library',
     'mailer',
+    'simple_history',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -62,6 +63,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'social.apps.django_app.middleware.SocialAuthExceptionMiddleware',
+    'simple_history.middleware.HistoryRequestMiddleware',
 )
 
 ROOT_URLCONF = 'openbare.urls'

@@ -19,7 +19,9 @@
 
 from django.contrib import admin
 from library.models import Lendable
+from library.models import FrontpageMessage
 
+from simple_history.admin import SimpleHistoryAdmin
 
 class LendableAdmin(admin.ModelAdmin):
     """Display primary key and str representation in list."""
@@ -27,5 +29,11 @@ class LendableAdmin(admin.ModelAdmin):
     list_display = ('pk', '__str__')
     readonly_fields = ('type', 'user', 'username', 'notify_timer')
 
+class FrontpageMessageAdmin(SimpleHistoryAdmin):
+    """List frontpage messages by rank and title"""
+
+    list_display = ('pk', 'rank', 'title')
+    readonly_fields = ('created_at', 'updated_at')
 
 admin.site.register(Lendable, LendableAdmin)
+admin.site.register(FrontpageMessage, FrontpageMessageAdmin)

@@ -21,10 +21,11 @@ from unittest.mock import patch
 
 from django.contrib.auth.models import AnonymousUser, User
 from django.core import mail
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.test import Client, RequestFactory, TestCase
 
-from library.models import AmazonDemoAccount, Lendable
+from library.models import AmazonDemoAccount, Lendable, FrontpageMessage
 from library.views import (get_items_checked_out_by, get_lendable_resources,
                            IndexView)
 
@@ -396,3 +397,83 @@ class AWSTestCase(TestCase):
             result = amazon_account_utils.destroy_iam_account('john')
 
         self.assertFalse(result)
+
+
+class FrontpageMessageTestCase(TestCase):
+    """Test frontpage messages in library app."""
+
+    def setUp(self):
+        """Setup test case."""
+        self.c = Client()
+        self.factory = RequestFactory()
+        self.fake_title = 'Magna feugiat potenti erat.'
+        self.fake_body = 'Euismod ad ac laoreet feugiat felis a vehicula.'
+
+    def test_schema(self):
+        # obvious failure
+        msg = FrontpageMessage.objects.create()
+        with self.assertRaises(ValidationError):
+            msg.full_clean()
+        # passing condition
+        msg = FrontpageMessage.objects.create(
+            title=self.fake_title,
+            body=self.fake_body
+        )
+        msg.full_clean()
+        # test factory
+        msg = self._valid_frontpage_message_factory()
+        msg.full_clean()
+        # title is required
+        msg = FrontpageMessage.objects.create(
+            body=self.fake_body
+        )
+        with self.assertRaises(ValidationError):
+            msg.full_clean()
+        # body is required
+        msg = FrontpageMessage.objects.create(
+            title=self.fake_title
+        )
+        with self.assertRaises(ValidationError):
+            msg.full_clean()
+
+    def test_sort_order(self):
+        msg_2nd = self._valid_frontpage_message_factory()
+        msg_2nd.rank = 2
+        msg_2nd.save()
+        msg_1st = self._valid_frontpage_message_factory()
+        msg_1st.rank = 1
+        msg_1st.save()
+
+        self.assertEqual(
+            list(FrontpageMessage.objects.all()),
+            [msg_1st, msg_2nd]
+        )
+    def test_rendered_into_page(self):
+        msg = self._valid_frontpage_message_factory()
+        msg.save()
+        response = self._get_index()
+        self.assertContains(response, self.fake_title)
+        self.assertContains(response, self.fake_body)
+
+    def test_line_breaks_rendered(self):
+        msg = self._valid_frontpage_message_factory()
+        msg.body = "Test\nlinebreaks"
+        msg.save()
+        self.assertContains(
+            self._get_index(),
+            "<p>Test<br/>linebreaks</p>",
+            html=True
+        )
+
+    def _valid_frontpage_message_factory(self):
+        return FrontpageMessage(
+            title=self.fake_title,
+            body=self.fake_body,
+            rank=1
+        )
+
+    def _get_index(self):
+        request = self.factory.get("/index")
+        request.user = AnonymousUser()
+        view = IndexView.as_view()
+        return view(request)
