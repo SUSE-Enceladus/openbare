@@ -40,10 +40,11 @@ from simple_history.models import HistoricalRecords
 class ProxyManager(models.Manager):
     """Override Manager to provide type-specific queries for proxy classes."""
 
-    def get_query_set(self):
+    def get_queryset(self):
         """Return queryset of lendables that match type."""
-        return super(ProxyManager, self).get_query_set().filter(
-            type=self.model.__name__.lower())
+        return super(ProxyManager, self).get_queryset().filter(
+            type=self.model.__name__.lower()
+        )
 
 
 class Lendable(models.Model):
@@ -59,13 +60,14 @@ class Lendable(models.Model):
     credentials = None
 
     # The first manager assigned is the default manager for the class and its
-    # subclasses. ProxyManager filters for the 'type' attribute to only load
-    # records that match the subclass...
-    lendables = ProxyManager()
-    # ..but, we need to be able to load a collection of lendables of all types!
+    # subclasses.
+    # We need to be able to load a collection of lendables of all types!
     # For example - everything that is checked out by a single user.
     # For this we can use the 'stock' manager.
     all_types = models.Manager()
+    # ProxyManager filters for the 'type' attribute to only load
+    # records that match the subclass...
+    lendables = ProxyManager()
 
     name = ''
     description = ''
@@ -236,6 +238,7 @@ cloud gives you access to a massive volume of resources on-demand.
         """
         return re.match('^[\w.@+=,-]+$', self.username) and \
             65 > len(self.username) > 1
+
 
 class FrontpageMessage(models.Model):
     rank = models.IntegerField(

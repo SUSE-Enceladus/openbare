@@ -448,6 +448,7 @@ class FrontpageMessageTestCase(TestCase):
             list(FrontpageMessage.objects.all()),
             [msg_1st, msg_2nd]
         )
+
     def test_rendered_into_page(self):
         msg = self._valid_frontpage_message_factory()
         msg.save()
