@@ -322,8 +322,9 @@ class AWSTestCase(TestCase):
         self.assertEqual("'Amazon Web Services - Demo Account' returned.",
                          message)
 
-        # Confirm lendable deleted
+        # Confirm lendable checked in and now has a check in date
         self.assertEqual(Lendable.all_types.count(), 0)
+        self.assertIsNotNone(Lendable.all_lendables.first().checked_in_on)
 
         mocker.delete_group({'GroupName': 'Admins'})
 

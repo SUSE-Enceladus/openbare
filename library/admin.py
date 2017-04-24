@@ -18,23 +18,56 @@
 # along with openbare. If not, see <http://www.gnu.org/licenses/>.
 
 from django.contrib import admin
+from django.utils.translation import ugettext_lazy as _
 from library.models import Lendable
 from library.models import FrontpageMessage
 
 from simple_history.admin import SimpleHistoryAdmin
 
 
+class CheckoutFilter(admin.SimpleListFilter):
+    """Provide filter to query checked out and returned lendables."""
+    title = _('checkout filter')
+    parameter_name = 'status'
+
+    def lookups(self, request, model_admin):
+        """The options for filter(value, display)."""
+        return (
+            ('checkedout', _('checked out lendables')),
+            ('returned', _('returned lendables')),
+        )
+
+    def queryset(self, request, queryset):
+        """Filter queryset based on value."""
+        if self.value() == 'checkedout':
+            return queryset.filter(checked_in_on__isnull=True)
+
+        if self.value() == 'returned':
+            return queryset.filter(checked_in_on__isnull=False)
+
+
 class LendableAdmin(admin.ModelAdmin):
     """Display primary key and str representation in list."""
 
+    list_filter = (CheckoutFilter,)
     list_display = ('pk', '__str__')
     readonly_fields = (
+        'checked_in_on',
         'checked_out_on',
         'type',
         'user',
         'username',
         'notify_timer'
     )
+
+    def get_queryset(self, request):
+        """Use default manager to return all lendables."""
+        query_set = self.model.all_lendables.get_queryset()
+
+        ordering = self.ordering or ()
+        if ordering:
+            query_set = query_set.order_by(*ordering)
+        return query_set
 
 
 class FrontpageMessageAdmin(SimpleHistoryAdmin):
