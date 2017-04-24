@@ -36,20 +36,32 @@ from unidecode import unidecode
 from simple_history.models import HistoricalRecords
 
 
+class CheckoutManager(models.Manager):
+    """Override default manager to filter on checked_in_on date."""
+
+    def get_queryset(self):
+        """Filter only lendables that are checked out."""
+        return super(CheckoutManager, self).get_queryset().filter(
+            checked_in_on__isnull=True
+        )
+
+
 # http://schinckel.net/2013/07/28/django-single-table-inheritance-on-the-cheap./
-class ProxyManager(models.Manager):
+class ProxyManager(CheckoutManager):
     """Override Manager to provide type-specific queries for proxy classes."""
 
-    def get_query_set(self):
+    def get_queryset(self):
         """Return queryset of lendables that match type."""
-        return super(ProxyManager, self).get_query_set().filter(
-            type=self.model.__name__.lower())
+        return super(ProxyManager, self).get_queryset().filter(
+            type=self.model.__name__.lower()
+        )
 
 
 class Lendable(models.Model):
     """Lendable model that lendable resources extend from."""
 
     type = models.CharField(max_length=254)
+    checked_in_on = models.DateTimeField(null=True, blank=True)
     checked_out_on = models.DateTimeField(auto_now_add=True)
     due_on = models.DateTimeField()
     notify_timer = models.FloatField(null=True, blank=True)
@@ -59,13 +71,17 @@ class Lendable(models.Model):
     credentials = None
 
     # The first manager assigned is the default manager for the class and its
-    # subclasses. ProxyManager filters for the 'type' attribute to only load
-    # records that match the subclass...
-    lendables = ProxyManager()
-    # ..but, we need to be able to load a collection of lendables of all types!
+    # subclasses.
+    # We need to be able to load a collection of lendables of all types!
     # For example - everything that is checked out by a single user.
     # For this we can use the 'stock' manager.
-    all_types = models.Manager()
+    all_types = CheckoutManager()
+    # ProxyManager filters for the 'type' attribute to only load
+    # records that match the subclass...
+    lendables = ProxyManager()
+    # And provide the default manager to retrieve all checked in and
+    # checked out lendables.
+    all_lendables = models.Manager()
 
     name = ''
     description = ''
@@ -123,6 +139,11 @@ class Lendable(models.Model):
     def is_renewable(self):
         """Return True if renewals are available."""
         return self.renewals > 0
+
+    def checkin(self):
+        """Update checkin date for lenable."""
+        self.checked_in_on = datetime.now(django.utils.timezone.UTC())
+        self.save()
 
     def checkout(self):
         """Initialize checked out date, due date and renewals available."""
@@ -215,6 +236,7 @@ cloud gives you access to a massive volume of resources on-demand.
 
     def checkin(self):
         """Checkin demo account and clean up AWS resources."""
+        super(AmazonDemoAccount, self).checkin()
         self.amazon_account_utils.destroy_iam_account(self.username)
 
     def _set_username(self):
@@ -236,6 +258,7 @@ cloud gives you access to a massive volume of resources on-demand.
         """
         return re.match('^[\w.@+=,-]+$', self.username) and \
             65 > len(self.username) > 1
+
 
 class FrontpageMessage(models.Model):
     rank = models.IntegerField(

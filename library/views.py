@@ -213,7 +213,6 @@ def checkin(request, primary_key):
         messages.error(request, e)
     else:
         messages.success(request, "'%s' returned." % (item.name))
-        item.delete()
     return redirect(reverse('library:index'))
 
 
