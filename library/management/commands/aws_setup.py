@@ -21,16 +21,17 @@
 import boto3
 import json
 import random
+import string
 
 from contextlib import suppress
 from django.core.management.base import BaseCommand, CommandError
 
-CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789'
+CHARS = string.ascii_lowercase + string.digits
 
 
-def get_random_string(length=12, allowed_chars=CHARS):
+def get_random_string(length=12):
     """Generate random string of given length with allowed chars."""
-    return ''.join(random.choice(allowed_chars) for _ in range(length))
+    return ''.join(random.choice(CHARS) for index in range(length))
 
 
 def get_account_id(session):
@@ -108,8 +109,13 @@ class Command(BaseCommand):
           ]
         }
 
-        # Create bucket
-        create_bucket(bucket_name, policy, session)
+        try:
+            # Create bucket
+            create_bucket(bucket_name, policy, session)
+        except Exception as e:
+            raise CommandError(
+                'Failed to create S3 bucket: %s' % str(e)
+            )
 
         try:
             # Enable cloud trail for all regions
@@ -129,6 +135,6 @@ class Command(BaseCommand):
         else:
             self.stdout.write(
                 self.style.SUCCESS(
-                    'CloudTrail with name: OpenbareLogs created successfully.'
+                    'CloudTrail with name: OpenbareLogs created successfully'
                 )
             )
