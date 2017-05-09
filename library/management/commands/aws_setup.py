@@ -24,6 +24,7 @@ import random
 import string
 
 from contextlib import suppress
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 CHARS = string.ascii_lowercase + string.digits
@@ -68,17 +69,12 @@ def enable_cloud_trail(name, bucket_name, session):
 class Command(BaseCommand):
     help = 'Creates a CloudTrail for openbare and enables logging.'
 
-    def add_arguments(self, parser):
-        parser.add_argument(
-            '--profile',
-            dest='profile',
-            default='default',
-            help='Boto3 profile to use.'
-        )
-
     def handle(self, *args, **options):
         """Create and enable CloudTrail for openbare."""
-        session = boto3.Session(profile_name=options['profile'])
+        session = boto3.Session(
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+        )
 
         bucket_name = '%s-%s' % ('openbare-cloudtrail', get_random_string())
         policy = {
