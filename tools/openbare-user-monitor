@@ -42,8 +42,6 @@ def checkin_expired_accounts():
             lendable.checkin()
         except Exception as e:
             logging.error(e)
-        else:
-            lendable.delete()
 
 
 def get_warning_message(lendable):
