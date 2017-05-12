@@ -37,16 +37,18 @@ MODULE_NAME = __name__.split('.')[-1]
 
 
 class Command(BaseCommand):
-    help = 'Collect EC2 events from cloudtrail.'
+    help = 'Collect EC2 events from cloudtrail region.'
     logger = logging.getLogger(MODULE_NAME)
+
+    def add_arguments(self, parser):
+        parser.add_argument('region', nargs='+')
 
     def handle(self, *args, **options):
         session = boto3.Session(
             aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
             aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
         )
-
-        for region in session.get_available_regions('cloudtrail'):
+        for region in options['region']:
             self.logger.debug(
                 'Collecting EC2 resources in region: %s' % region
             )
@@ -66,7 +68,7 @@ class Command(BaseCommand):
                 cloud_trail = session.client(
                     'cloudtrail',
                     region_name=region
-                )
+                    )
 
                 token = None
                 while True:

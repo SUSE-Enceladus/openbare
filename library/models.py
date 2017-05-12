@@ -301,9 +301,11 @@ class Resource(TypedModel):
 class AWSInstance(Resource):
     def run_instances(self, time):
         self.acquired = time
+        self.save()
 
     def terminate_instances(self, time):
         self.released = time
+        self.save()
 
 
 class ManagementCommand(models.Model):
