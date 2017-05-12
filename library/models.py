@@ -20,8 +20,6 @@
 import django
 import re
 
-from datetime import datetime, timedelta
-
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -29,11 +27,12 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.utils.crypto import get_random_string
 from django.utils.translation import ugettext_lazy as _
 
-from library.amazon_account_utils import AmazonAccountUtils
-
+from datetime import datetime, timedelta
+from simple_history.models import HistoricalRecords
+from typedmodels.models import TypedModel
 from unidecode import unidecode
 
-from simple_history.models import HistoricalRecords
+from library.amazon_account_utils import AmazonAccountUtils
 
 
 class CheckoutManager(models.Manager):
@@ -275,3 +274,41 @@ class FrontpageMessage(models.Model):
 
     class Meta:
         ordering = ['rank', '-updated_at']
+
+
+class Resource(TypedModel):
+    # https://github.com/craigds/django-typed-models
+    acquired = models.DateTimeField(null=True, blank=True)
+    lendable = models.ForeignKey(
+        Lendable,
+        on_delete=models.CASCADE,
+        related_name='resources',
+        null=True,
+        blank=True
+    )
+    reaped = models.BooleanField(default=False)
+    released = models.DateTimeField(null=True, blank=True)
+    resource_id = models.CharField(max_length=127)
+    scope = models.CharField(max_length=63)
+
+    def __repr__(self):
+        return u'<%s: %s>' % (self.__class__.__name__, self.__str__)
+
+    def __str__(self):
+        return self.resource_id
+
+
+class AWSInstance(Resource):
+    def run_instances(self, time):
+        self.acquired = time
+
+    def terminate_instances(self, time):
+        self.released = time
+
+
+class ManagementCommand(models.Model):
+    name = models.CharField(max_length=127, unique=True)
+    last_success = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
