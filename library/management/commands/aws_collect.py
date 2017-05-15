@@ -29,8 +29,16 @@ from django.utils.timezone import UTC
 from library.models import AWSInstance, Lendable, ManagementCommand
 
 EVENTS = {
-    'RunInstances': AWSInstance,
-    'TerminateInstances': AWSInstance
+    'RunInstances': {
+        'class': AWSInstance,
+        'id': 'instanceId',
+        'list_field': 'instancesSet'
+    },
+    'TerminateInstances': {
+        'class': AWSInstance,
+        'id': 'instanceId',
+        'list_field': 'instancesSet'
+    },
 }
 MAX_RESULTS = 50
 MODULE_NAME = __name__.split('.')[-1]
@@ -114,11 +122,22 @@ class Command(BaseCommand):
                 command.save()
 
     def handle_event(self, detail, event, user):
-        for item in detail['responseElements']['instancesSet']['items']:
+        event_data = EVENTS[event['EventName']]
+        if 'list_field' in event_data:
+            for item in (detail['responseElements']
+                         [event_data['list_field']]
+                         ['items']):
+                self.save_event(
+                    detail,
+                    event,
+                    item[event_data['id']],
+                    user
+                )
+        else:
             self.save_event(
                 detail,
                 event,
-                item['instanceId'],
+                detail['responseElements'][event_data['id']],
                 user
             )
 
@@ -137,7 +156,7 @@ class Command(BaseCommand):
             lendable = None
 
         instance, created = \
-            EVENTS[event['EventName']].objects.get_or_create(
+            EVENTS[event['EventName']]['class'].objects.get_or_create(
                 lendable=lendable,
                 resource_id=resource_id,
                 scope=detail['awsRegion']
@@ -148,5 +167,14 @@ class Command(BaseCommand):
             self.inflection(event['EventName'])
         )(event['EventTime'])
 
-        self.stdout.write(self.style.SUCCESS(event['EventName']))
-        self.logger.debug(event['EventName'])
+        msg = 'Processed event %s for id: %s' % (
+            event['EventName'],
+            resource_id
+        )
+
+        if lendable:
+            msg += ' associated with lendable: %s' % lendable.pk
+
+        self.logger.debug(
+            msg
+        )
