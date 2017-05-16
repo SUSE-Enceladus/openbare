@@ -20,25 +20,23 @@
 import boto3
 import json
 import logging
-import re
 
 from datetime import datetime, timedelta
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.timezone import UTC
-from library.models import AWSInstance, Lendable, ManagementCommand
+from library.models import (
+    AWSInstance,
+    Lendable,
+    ManagementCommand,
+    Resource
+)
 
 EVENTS = {
-    'RunInstances': {
-        'class': AWSInstance,
-        'id': 'instanceId',
-        'list_field': 'instancesSet'
-    },
-    'TerminateInstances': {
-        'class': AWSInstance,
-        'id': 'instanceId',
-        'list_field': 'instancesSet'
-    },
+    'CreateTags': Resource,
+    'DeleteTags': Resource,
+    'RunInstances': AWSInstance,
+    'TerminateInstances': AWSInstance
 }
 MAX_RESULTS = 50
 MODULE_NAME = __name__.split('.')[-1]
@@ -122,58 +120,21 @@ class Command(BaseCommand):
                 command.save()
 
     def handle_event(self, detail, event, user):
-        event_data = EVENTS[event['EventName']]
-        if 'list_field' in event_data:
-            for item in (detail['responseElements']
-                         [event_data['list_field']]
-                         ['items']):
-                self.save_event(
-                    detail,
-                    event,
-                    item[event_data['id']],
-                    user
-                )
-        else:
-            self.save_event(
-                detail,
-                event,
-                detail['responseElements'][event_data['id']],
-                user
-            )
-
-    def inflection(self, name):
-        """Convert camelcase names into snakecase attributes.
-
-        RunInstances == run_instances
-        """
-        name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-        return re.sub('([a-z0-9])([A-Z])', r'\1_\2', name).lower()
-
-    def save_event(self, detail, event, resource_id, user):
         try:
             lendable = Lendable.all_types.get(username=user)
         except:
             lendable = None
 
-        instance, created = \
-            EVENTS[event['EventName']]['class'].objects.get_or_create(
-                lendable=lendable,
-                resource_id=resource_id,
-                scope=detail['awsRegion']
-            )
-
-        getattr(
-            instance,
-            self.inflection(event['EventName'])
-        )(event['EventTime'])
-
-        msg = 'Processed event %s for id: %s' % (
-            event['EventName'],
-            resource_id
+        result = EVENTS[event['EventName']].parse_event(
+            detail,
+            event,
+            lendable
         )
 
-        if lendable:
-            msg += ' associated with lendable: %s' % lendable.pk
+        msg = 'Processed event %s for id(s): %s' % (
+            event['EventName'],
+            result
+        )
 
         self.logger.debug(
             msg
