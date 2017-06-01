@@ -80,12 +80,23 @@ class AmazonAccountUtils:
         random.shuffle(password_set)
         return ''.join(password_set)[:length]
 
-    def _get_aws_session(self):
+    def _get_aws_session(self, region=None):
         self.log('opening session')
+        if region:
+            return boto3.session.Session(
+                aws_access_key_id=self.aws_access_key_id,
+                aws_secret_access_key=self.aws_secret_access_key,
+                region_name=region
+            )
         return boto3.session.Session(
             aws_access_key_id=self.aws_access_key_id,
             aws_secret_access_key=self.aws_secret_access_key
         )
+
+    def _get_ec2_resource(self, region):
+        session = self._get_aws_session(region)
+        self.log('accessing ec2 resource')
+        return session.resource('ec2')
 
     def _get_iam_resource(self, session=None):
         if not session:
@@ -216,3 +227,35 @@ class AmazonAccountUtils:
             return True
         else:
             return False
+
+    def cleanup_resources(self, lendable):
+        resources = collections.defaultdict(list)
+        for resource in lendable.resources.all():
+            resources[resource.scope].append(resource)
+
+        for region, resource_list in resources.items():
+            ec2 = self._get_ec2_resource(region)
+            for resource in resource_list:
+                if resource.type == 'library.awsinstance':
+                    inst = ec2.Instance(resource.resource_id)
+                    try:
+                        inst.state
+                    except AttributeError:
+                        self.log(
+                            'Instance %s not found' % inst.id,
+                            INFO
+                        )
+                    else:
+                        if resource.preserve:
+                            self.log(
+                                'Instance %s preserved' % inst.id,
+                                INFO
+                            )
+                            resource.lendable = None
+                            resource.save()
+                        else:
+                            inst.terminate()
+                            self.log(
+                                'Instance %s terminated' % inst.id,
+                                INFO
+                            )
