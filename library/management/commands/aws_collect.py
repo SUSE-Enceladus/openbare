@@ -26,9 +26,9 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.timezone import UTC
 from library.models import (
+    AmazonDemoAccount,
     AWSInstance,
     AWSResource,
-    Lendable,
     ManagementCommand
 )
 
@@ -126,7 +126,7 @@ class Command(BaseCommand):
 
     def handle_event(self, detail, event, user):
         try:
-            lendable = Lendable.all_types.get(username=user)
+            lendable = AmazonDemoAccount.lendables.get(username=user)
         except:
             lendable = None
 

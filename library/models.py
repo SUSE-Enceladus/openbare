@@ -306,12 +306,12 @@ class AWSResource(Resource):
     @classmethod
     def get_resource(cls, resource_id, scope):
         try:
-            instance = cls.objects.get(
+            resource = cls.objects.get(
                 resource_id=resource_id,
                 scope=scope
             )
 
-            return instance
+            return resource
         except:
             return None
 
