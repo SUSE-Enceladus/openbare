@@ -73,7 +73,7 @@ class LendableAdmin(admin.ModelAdmin):
     """Display primary key and str representation in list."""
 
     inlines = [ResourceInline]
-    list_filter = (CheckoutFilter,)
+    list_filter = (CheckoutFilter, 'type')
     list_display = ('pk', '__str__')
     readonly_fields = (
         'checked_in_on',
