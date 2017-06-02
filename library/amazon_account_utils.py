@@ -253,6 +253,11 @@ class AmazonAccountUtils:
                             )
                             resource.lendable = None
                             resource.save()
+                        elif resource.released:
+                            self.log(
+                                'Instance %s already released' % inst.id,
+                                INFO
+                            )
                         else:
                             inst.terminate()
                             self.log(

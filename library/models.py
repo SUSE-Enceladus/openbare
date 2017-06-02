@@ -23,6 +23,7 @@ import re
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core import management
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.utils.crypto import get_random_string
 from django.utils.translation import ugettext_lazy as _
@@ -300,12 +301,14 @@ class Resource(TypedModel):
     def __str__(self):
         return self.resource_id
 
+
+class AWSResource(Resource):
     @classmethod
-    def get_resource(cls, resource_id, region):
+    def get_resource(cls, resource_id, scope):
         try:
             instance = cls.objects.get(
                 resource_id=resource_id,
-                scope=region
+                scope=scope
             )
 
             return instance
@@ -325,7 +328,7 @@ class Resource(TypedModel):
 
                 if resource:
                     resource_ids.append(item['resourceId'])
-                    for value in ['requestParameters']['tagSet']['items']:
+                    for value in detail['requestParameters']['tagSet']['items']:
                         if event['EventName'] == 'CreateTags':
                             resource.create_tag(value)
                         elif event['EventName'] == 'DeleteTags':
@@ -353,12 +356,12 @@ class Resource(TypedModel):
             self.save()
 
 
-class AWSInstance(Resource):
+class AWSInstance(AWSResource):
     @classmethod
-    def get_instance(cls, instance_id, lendable, region):
+    def get_instance(cls, instance_id, lendable, scope):
         instance, created = cls.objects.get_or_create(
             resource_id=instance_id,
-            scope=region
+            scope=scope
         )
 
         if lendable and created:

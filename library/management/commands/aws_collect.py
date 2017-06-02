@@ -27,14 +27,14 @@ from django.core.management.base import BaseCommand
 from django.utils.timezone import UTC
 from library.models import (
     AWSInstance,
+    AWSResource,
     Lendable,
-    ManagementCommand,
-    Resource
+    ManagementCommand
 )
 
 EVENTS = {
-    'CreateTags': Resource,
-    'DeleteTags': Resource,
+    'CreateTags': AWSResource,
+    'DeleteTags': AWSResource,
     'RunInstances': AWSInstance,
     'TerminateInstances': AWSInstance
 }
@@ -66,49 +66,54 @@ class Command(BaseCommand):
                     name=name
                 )
 
-                if not command.last_success:
-                    start_time = current_time - timedelta(days=7)
-                else:
+                if command.last_success:
                     start_time = command.last_success - timedelta(hours=1)
+                else:
+                    start_time = current_time - timedelta(days=7)
 
                 cloud_trail = session.client(
                     'cloudtrail',
                     region_name=region
-                    )
+                )
 
                 token = None
+                events = []
                 while True:
                     if token:
-                        events = cloud_trail.lookup_events(
+                        response = cloud_trail.lookup_events(
                             StartTime=start_time,
                             MaxResults=MAX_RESULTS,
                             NextToken=token
                         )
                     else:
-                        events = cloud_trail.lookup_events(
+                        response = cloud_trail.lookup_events(
                             StartTime=start_time,
                             MaxResults=MAX_RESULTS
                         )
-
-                    for event in events['Events']:
-                        if event['EventName'] in EVENTS:
-                            detail = json.loads(event['CloudTrailEvent'])
-                            principal = detail['userIdentity']['principalId']
-                            user_type = detail['userIdentity']['type']
-
-                            if user_type == 'IAMUser':
-                                user = detail['userIdentity']['userName']
-                            elif user_type == 'Root':
-                                user = principal
-                            else:
-                                continue
-
-                            self.handle_event(detail, event, user)
+                    events += response['Events']
 
                     try:
-                        token = events['NextToken']
+                        token = response['NextToken']
                     except KeyError:
                         break
+
+                # Events are stacked lifo so reverse to process
+                # the events in order of occurrence.
+                events.reverse()
+                for event in events:
+                    if event['EventName'] in EVENTS:
+                        detail = json.loads(event['CloudTrailEvent'])
+                        principal = detail['userIdentity']['principalId']
+                        user_type = detail['userIdentity']['type']
+
+                        if user_type == 'IAMUser':
+                            user = detail['userIdentity']['userName']
+                        elif user_type == 'Root':
+                            user = principal
+                        else:
+                            continue
+
+                        self.handle_event(detail, event, user)
 
             except Exception as error:
                 self.logger.error(
