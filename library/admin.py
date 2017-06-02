@@ -56,12 +56,17 @@ class ResourceInline(admin.TabularInline):
     model = Resource
 
     readonly_fields = (
+        'type',
         'acquired',
+        'preserve',
         'released',
         'scope',
-        'reaped',
-        'resource_id'
+        'resource_id',
+        'reaped'
     )
+
+    def has_delete_permission(self, request, obj):
+        return False
 
 
 class LendableAdmin(admin.ModelAdmin):
@@ -87,6 +92,9 @@ class LendableAdmin(admin.ModelAdmin):
         if ordering:
             query_set = query_set.order_by(*ordering)
         return query_set
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class FrontpageMessageAdmin(SimpleHistoryAdmin):
@@ -122,7 +130,9 @@ class ResourceAdmin(admin.ModelAdmin):
     list_display = ('pk', '__str__', 'type', 'lendable_checkout')
     list_filter = ('type', ResourceFilter,)
     readonly_fields = (
+        'type',
         'acquired',
+        'preserve',
         'released',
         'lendable',
         'scope',
@@ -141,6 +151,9 @@ class ResourceAdmin(admin.ModelAdmin):
             )
         return None
     lendable_checkout.empty_value_display = 'None'
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 admin.site.register(Lendable, LendableAdmin)
