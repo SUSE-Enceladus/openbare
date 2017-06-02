@@ -264,3 +264,5 @@ class AmazonAccountUtils:
                                 'Instance %s terminated' % inst.id,
                                 INFO
                             )
+                            resource.reaped = True
+                            resource.save()
