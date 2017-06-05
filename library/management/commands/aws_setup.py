@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Creates and enables cloud trail."""
 # -*- coding: utf-8 -*-
 #
 # Copyright © 2017 SUSE LLC.
@@ -67,6 +68,8 @@ def enable_cloud_trail(name, bucket_name, session):
 
 
 class Command(BaseCommand):
+    """Command to create and enable cloud trail in AWS."""
+
     help = 'Creates a CloudTrail for openbare and enables logging.'
 
     def handle(self, *args, **options):

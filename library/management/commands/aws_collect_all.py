@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Collects events for all cloud trail enabled regions."""
 # -*- coding: utf-8 -*-
 #
 # Copyright © 2017 SUSE LLC.

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""AWS EC2 event collection script."""
 # -*- coding: utf-8 -*-
 #
 # Copyright © 2017 SUSE LLC.
