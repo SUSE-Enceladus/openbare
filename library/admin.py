@@ -33,11 +33,12 @@ from simple_history.admin import SimpleHistoryAdmin
 
 class CheckoutFilter(admin.SimpleListFilter):
     """Provide filter to query checked out and returned lendables."""
+
     title = _('checkout filter')
     parameter_name = 'status'
 
     def lookups(self, request, model_admin):
-        """The options for filter(value, display)."""
+        """Fiter options."""
         return (
             ('checkedout', _('checked out lendables')),
             ('returned', _('returned lendables')),
@@ -53,6 +54,8 @@ class CheckoutFilter(admin.SimpleListFilter):
 
 
 class ResourceInline(admin.TabularInline):
+    """Admin inline of resources for lendables."""
+
     model = Resource
 
     readonly_fields = (
@@ -66,6 +69,7 @@ class ResourceInline(admin.TabularInline):
     )
 
     def has_delete_permission(self, request, obj):
+        """Prevent deletion of resources on lendables."""
         return False
 
 
@@ -94,28 +98,32 @@ class LendableAdmin(admin.ModelAdmin):
         return query_set
 
     def has_delete_permission(self, request, obj=None):
+        """Prevent deletion of lendables in admin panel."""
         return False
 
 
 class FrontpageMessageAdmin(SimpleHistoryAdmin):
-    """List frontpage messages by rank and title"""
+    """List frontpage messages by rank and title."""
 
     list_display = ('pk', 'rank', 'title')
     readonly_fields = ('created_at', 'updated_at')
 
 
 class ManagementCommandAdmin(admin.ModelAdmin):
+    """List management command sucess times."""
+
     list_display = ('pk', 'name', 'last_success')
     readonly_fields = ('name',)
 
 
 class ResourceFilter(admin.SimpleListFilter):
     """Provide filter to query resources without lendable."""
+
     title = _('resource filter')
     parameter_name = 'lendable'
 
     def lookups(self, request, model_admin):
-        """The options for filter(value, display)."""
+        """Filter options."""
         return (
             ('nolendable', _('no lendable')),
         )
@@ -127,6 +135,8 @@ class ResourceFilter(admin.SimpleListFilter):
 
 
 class ResourceAdmin(admin.ModelAdmin):
+    """List all resources."""
+
     list_display = ('pk', '__str__', 'type', 'lendable_checkout')
     list_filter = ('type', ResourceFilter,)
     readonly_fields = (
@@ -141,6 +151,7 @@ class ResourceAdmin(admin.ModelAdmin):
     )
 
     def lendable_checkout(self, obj):
+        """Display link to lendable admin page."""
         if obj.lendable:
             change_url = reverse(
                 'admin:library_lendable_change',
@@ -153,6 +164,7 @@ class ResourceAdmin(admin.ModelAdmin):
     lendable_checkout.empty_value_display = 'None'
 
     def has_delete_permission(self, request, obj=None):
+        """Prevent deletion of resources in admin panel."""
         return False
 
 
