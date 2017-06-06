@@ -65,7 +65,9 @@ class ResourceInline(admin.TabularInline):
         'released',
         'scope',
         'resource_id',
-        'reaped'
+        'reaped',
+        'created_at',
+        'updated_at'
     )
 
     def has_delete_permission(self, request, obj):
@@ -134,7 +136,7 @@ class ResourceFilter(admin.SimpleListFilter):
             return queryset.filter(lendable__isnull=True)
 
 
-class ResourceAdmin(admin.ModelAdmin):
+class ResourceAdmin(SimpleHistoryAdmin):
     """List all resources."""
 
     list_display = ('pk', '__str__', 'type', 'lendable_checkout')
@@ -147,7 +149,9 @@ class ResourceAdmin(admin.ModelAdmin):
         'lendable',
         'scope',
         'reaped',
-        'resource_id'
+        'resource_id',
+        'created_at',
+        'updated_at'
     )
 
     def lendable_checkout(self, obj):
