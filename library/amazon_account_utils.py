@@ -251,6 +251,7 @@ class AmazonAccountUtils:
                                 'Instance %s preserved' % inst.id,
                                 INFO
                             )
+                            inst.stop()
                             resource.lendable = None
                             resource.save()
                         elif resource.released:

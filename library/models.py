@@ -307,7 +307,7 @@ class Resource(TypedModel):
 
     def __repr__(self):
         """Display class name (type) and resource id."""
-        return u'<%s: %s>' % (self.__class__.__name__, self.__str__)
+        return u'<%s: %s>' % (self.__class__.__name__, self.resource_id)
 
     def __str__(self):
         """Display resource id as string repr."""

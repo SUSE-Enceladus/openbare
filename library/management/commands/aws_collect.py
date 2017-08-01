@@ -114,7 +114,8 @@ class Command(BaseCommand):
                         else:
                             continue
 
-                        self.handle_event(detail, event, user)
+                        if 'errorCode' not in detail:
+                            self.handle_event(detail, event, user)
 
             except Exception as error:
                 self.logger.error(
