@@ -27,5 +27,4 @@ AWS_SECRET_ACCESS_KEY = ''
 AWS_ACCOUNT_ID_ALIAS = ''
 # When IAM users are created, they will be automatically joined to the
 # listed groups
-# A comma separated list of previously created IAM groups
-AWS_IAM_GROUPS = ''
+AWS_IAM_GROUPS = []

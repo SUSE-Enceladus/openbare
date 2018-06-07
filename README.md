@@ -213,8 +213,7 @@ AWS_SECRET_ACCESS_KEY = ''
 AWS_ACCOUNT_ID_ALIAS = ''
 
 # Optional: Users are added to the following IAM groups
-# A comma separated string of pre-created IAM groups
-AWS_IAM_GROUPS = ''
+AWS_IAM_GROUPS = []
 ```
 
 ### Adding a resource

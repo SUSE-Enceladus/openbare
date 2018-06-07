@@ -167,7 +167,7 @@ class AmazonAccountUtils:
         """Return true if account exists."""
         return True if self._get_iam_user(username) else False
 
-    def create_iam_account(self, username, groups=''):
+    def create_iam_account(self, username, groups=[]):
         """Create an IAM account for the given username.
 
         Returns:
@@ -189,7 +189,7 @@ class AmazonAccountUtils:
         iam_resource = self._get_iam_resource()
         iam_user = iam_resource.User(username).create(Path='/openbare/')
         try:
-            for group in groups.split(','):
+            for group in groups:
                 iam_user.add_group(GroupName=group.strip())
             iam_user.create_login_profile(
                 Password=credentials['Password'],
