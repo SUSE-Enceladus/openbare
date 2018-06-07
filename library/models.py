@@ -227,11 +227,11 @@ cloud gives you access to a massive volume of resources on-demand.
     def checkout(self):
         """Checkout a demo account using IAM credentials."""
         super(AmazonDemoAccount, self).checkout()
-        group = getattr(settings, 'AWS_IAM_GROUP', None)
+        groups = getattr(settings, 'AWS_IAM_GROUPS', '')
 
         self.credentials = self.amazon_account_utils.create_iam_account(
             self.username,
-            group
+            groups
         )
 
     def checkin(self):
