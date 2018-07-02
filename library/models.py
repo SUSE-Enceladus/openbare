@@ -1,6 +1,6 @@
 """Models for library app."""
 
-# Copyright © 2016 SUSE LLC, James Mason <jmason@suse.com>.
+# Copyright © 2018 SUSE LLC, James Mason <jmason@suse.com>.
 #
 # This file is part of openbare.
 #
@@ -227,11 +227,15 @@ cloud gives you access to a massive volume of resources on-demand.
     def checkout(self):
         """Checkout a demo account using IAM credentials."""
         super(AmazonDemoAccount, self).checkout()
-        group = getattr(settings, 'AWS_IAM_GROUP', None)
+        groups = getattr(settings, 'AWS_IAM_GROUPS', [])
+        # Handle deprecated setting
+        default_group = getattr(settings, 'AWS_IAM_GROUP', None)
+        if default_group:
+            groups.append(default_group)
 
         self.credentials = self.amazon_account_utils.create_iam_account(
             self.username,
-            group
+            groups
         )
 
     def checkin(self):

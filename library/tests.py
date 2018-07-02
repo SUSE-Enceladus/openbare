@@ -254,7 +254,7 @@ class AWSTestCase(TestCase):
 
         # Checkout AWS account
         with self.settings(AWS_ACCOUNT_ID_ALIAS='John.Wayne',
-                           AWS_IAM_GROUP='Admins'):
+                           AWS_IAM_GROUPS='Admins'):
             with patch('botocore.client.BaseClient._make_api_call',
                        new=mocker.mock_make_api_call):
                 # Test check out AWS lendable
@@ -335,7 +335,7 @@ class AWSTestCase(TestCase):
         # Test create IAM account group not found exception handled
         with patch('botocore.client.BaseClient._make_api_call',
                    new=mocker.mock_make_api_call):
-            with self.settings(AWS_IAM_GROUP='Admins',
+            with self.settings(AWS_IAM_GROUPS='Admins',
                                AWS_ACCOUNT_ID_ALIAS=None):
                 response = self.c.get(reverse('library:checkout',
                                               args=['amazondemoaccount']),
