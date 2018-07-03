@@ -21,7 +21,7 @@ Release:        0
 Summary:        A digital asset library system, implemented on Django
 License:        GPL-3.0
 Group:          Applications/Internet
-Url:            https://github.com/openbare/openbare
+Url:            https://github.com/SUSE-Enceladus/openbare
 Source0:        %{name}-%{version}.tar.bz2
 Requires:       python3
 Requires:       python3-Django >= 1.10.0, python3-Django < 1.11.0
