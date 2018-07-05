@@ -114,15 +114,15 @@
                   <td>
                     {{ checked_out_item.due_on|format_date }}
                   </td>
-                  <td>
+                  <td class="text-right">
                     {% if checked_out_item.is_renewable %}
                       <a href="{%url 'library:renew' checked_out_item.pk %}" role="button" class="btn btn-default btn-xs" title="Need more time? Extend the due date." data-toggle="tooltip">Renew</a>
                     {% else %}
                       <span title="Need more time? Ask the site admins for an extension" data-toggle="tooltip"><button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#item_{{ checked_out_item.pk }}_request_extension" >Request Extension</button></span>
                     {% endif %}
                   </td>
-                  <td>
-                    <a href="{%url 'library:checkin' checked_out_item.pk %}" role="button" class="btn btn-default btn-xs" title="Finished early? Return the resource so it's available to others." data-toggle="tooltip">Return</a>
+                  <td class="text-right">
+                    <a href="{%url 'library:checkin' checked_out_item.pk %}" role="button" class="btn btn-default btn-xs checkin-btn" title="Finished early? Return the resource so it's available to others." data-toggle="tooltip">Return</a>
                   </td>
                 </tr>
               {% endfor %}
@@ -246,7 +246,7 @@
               {% else %}
                 <span title="Need more time? Ask the site admins for an extension" data-toggle="tooltip"><button type="button" class="btn btn-default btn-xs" data-dismiss="modal" data-toggle="modal" data-target="#item_{{ checked_out_item.pk }}_request_extension" >Request Extension</button></span>
               {% endif %}
-              <a href="{%url 'library:checkin' checked_out_item.pk %}" role="button" class="btn btn-default btn-xs" data-placement="left" title="Finished early? Return the resource so it's available to others." data-toggle="tooltip">Return</a>
+              <a href="{%url 'library:checkin' checked_out_item.pk %}" role="button" class="btn btn-default btn-xs checkin-btn" data-placement="left" title="Finished early? Return the resource so it's available to others." data-toggle="tooltip">Return</a>
             </div>
           </div>
         </div>
@@ -291,10 +291,12 @@
       </div>
     {% endif %}
   {% endif %}
+  <div id="grey-out" style="position:fixed; z-index: 1051; top:0; left:0; bottom:0; right:0; background:rgba(0,0,0,.5); display: none;"></div>
 {% endblock %}
 
 {% block js_include %}
   {% if checkout %}
     <script src="{% static 'js/checkout.js' %}"></script>
   {% endif %}
+  <script src="{% static 'js/checkin.js' %}"></script>
 {% endblock %}

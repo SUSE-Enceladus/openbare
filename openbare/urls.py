@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with openbare. If not, see <http://www.gnu.org/licenses/>.
 
+import debug_toolbar
 from django.conf.urls import include, url
 from django.contrib import admin
 from library.views import IndexView
@@ -26,4 +27,5 @@ urlpatterns = [
     url(r'^library/', include('library.urls', namespace='library')),
     url(r'^mail/', include('mailer.urls', namespace='mailer')),
     url(r'^$', IndexView.as_view(), name='home'),
+    url(r'^__debug__/', include(debug_toolbar.urls)),
 ]

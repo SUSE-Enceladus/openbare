@@ -236,10 +236,14 @@ cloud gives you access to a massive volume of resources on-demand.
 
     def checkin(self):
         """Checkin demo account and clean up AWS resources."""
-        super(AmazonDemoAccount, self).checkin()
-        self.amazon_account_utils.destroy_iam_account(self.username)
-        management.call_command('aws_collect_all', interactive=False)
-        self.amazon_account_utils.cleanup_resources(self)
+        #super(AmazonDemoAccount, self).checkin()
+        #self.amazon_account_utils.destroy_iam_account(self.username)
+
+        # Collect most recent events from EC2 then cleanup resources
+        import time
+        time.sleep(5)
+        #management.call_command('aws_collect_all', interactive=False)
+        #self.amazon_account_utils.cleanup_resources(self)
 
     def _set_username(self):
         """Normalize username to remove none ascii chars and validate."""
