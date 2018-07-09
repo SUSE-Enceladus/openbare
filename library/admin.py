@@ -18,9 +18,14 @@
 # along with openbare. If not, see <http://www.gnu.org/licenses/>.
 
 from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
-from library.models import Lendable
-from library.models import FrontpageMessage
+from library.models import (
+    FrontpageMessage,
+    Lendable,
+    Resource
+)
 
 from simple_history.admin import SimpleHistoryAdmin
 
@@ -46,10 +51,33 @@ class CheckoutFilter(admin.SimpleListFilter):
             return queryset.filter(checked_in_on__isnull=False)
 
 
+class ResourceInline(admin.TabularInline):
+    """Admin inline of resources for lendables."""
+
+    model = Resource
+
+    readonly_fields = (
+        'type',
+        'acquired',
+        'preserve',
+        'released',
+        'scope',
+        'resource_id',
+        'reaped',
+        'created_at',
+        'updated_at'
+    )
+
+    def has_delete_permission(self, request, obj):
+        """Prevent deletion of resources on lendables."""
+        return False
+
+
 class LendableAdmin(admin.ModelAdmin):
     """Display primary key and str representation in list."""
 
-    list_filter = (CheckoutFilter,)
+    inlines = [ResourceInline]
+    list_filter = (CheckoutFilter, 'type')
     list_display = ('pk', '__str__')
     readonly_fields = (
         'checked_in_on',
@@ -69,6 +97,10 @@ class LendableAdmin(admin.ModelAdmin):
             query_set = query_set.order_by(*ordering)
         return query_set
 
+    def has_delete_permission(self, request, obj=None):
+        """Prevent deletion of lendables in admin panel."""
+        return False
+
 
 class FrontpageMessageAdmin(SimpleHistoryAdmin):
     """List frontpage messages by rank and title"""
@@ -77,5 +109,60 @@ class FrontpageMessageAdmin(SimpleHistoryAdmin):
     readonly_fields = ('created_at', 'updated_at')
 
 
+class ResourceFilter(admin.SimpleListFilter):
+    """Provide filter to query resources without lendable."""
+
+    title = _('resource filter')
+    parameter_name = 'lendable'
+
+    def lookups(self, request, model_admin):
+        """Filter options."""
+        return (
+            ('nolendable', _('no lendable')),
+        )
+
+    def queryset(self, request, queryset):
+        """Filter queryset based on value."""
+        if self.value() == 'nolendable':
+            return queryset.filter(lendable__isnull=True)
+
+
+class ResourceAdmin(SimpleHistoryAdmin):
+    """List all resources."""
+
+    list_display = ('pk', '__str__', 'type', 'lendable_checkout')
+    list_filter = ('type', ResourceFilter,)
+    readonly_fields = (
+        'type',
+        'acquired',
+        'preserve',
+        'released',
+        'lendable',
+        'scope',
+        'reaped',
+        'resource_id',
+        'created_at',
+        'updated_at'
+    )
+
+    def lendable_checkout(self, obj):
+        """Display link to lendable admin page."""
+        if obj.lendable:
+            change_url = reverse(
+                'admin:library_lendable_change',
+                args=(obj.lendable.id,)
+            )
+            return format_html(
+                u"<a href='%s'>%s</a>" % (change_url, obj.lendable.id)
+            )
+        return None
+    lendable_checkout.empty_value_display = 'None'
+
+    def has_delete_permission(self, request, obj=None):
+        """Prevent deletion of resources in admin panel."""
+        return False
+
+
 admin.site.register(Lendable, LendableAdmin)
 admin.site.register(FrontpageMessage, FrontpageMessageAdmin)
+admin.site.register(Resource, ResourceAdmin)
