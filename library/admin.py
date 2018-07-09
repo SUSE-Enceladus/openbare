@@ -19,8 +19,11 @@
 
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-from library.models import Lendable
-from library.models import FrontpageMessage
+from library.models import (
+    FrontpageMessage,
+    Lendable,
+    ManagementCommand
+)
 
 from simple_history.admin import SimpleHistoryAdmin
 
@@ -77,5 +80,13 @@ class FrontpageMessageAdmin(SimpleHistoryAdmin):
     readonly_fields = ('created_at', 'updated_at')
 
 
+class ManagementCommandAdmin(admin.ModelAdmin):
+    """List management command sucess times."""
+
+    list_display = ('pk', 'name', 'last_success')
+    readonly_fields = ('name',)
+
+
 admin.site.register(Lendable, LendableAdmin)
+admin.site.register(ManagementCommand, ManagementCommandAdmin)
 admin.site.register(FrontpageMessage, FrontpageMessageAdmin)

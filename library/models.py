@@ -279,3 +279,14 @@ class FrontpageMessage(models.Model):
 
     class Meta:
         ordering = ['rank', '-updated_at']
+
+
+class ManagementCommand(models.Model):
+    """Class for tracking the last success time of commands."""
+
+    name = models.CharField(max_length=127, unique=True)
+    last_success = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        """Display command name as string repr."""
+        return self.name
