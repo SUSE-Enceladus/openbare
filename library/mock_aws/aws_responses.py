@@ -19,7 +19,7 @@
 
 from botocore.exceptions import ClientError
 from datetime import datetime
-from django.utils.timezone import UTC
+from django.utils.timezone import utc
 
 from .constants import signing_cert
 
@@ -32,7 +32,7 @@ def client_error(operation, code, message):
 
 def get_time_now():
     """Return the time as a datetime object and string."""
-    now = datetime.now(UTC())
+    now = datetime.now(utc)
     now_str = now.strftime('%a, %d %b %Y %H:%M:%S GMT')
     return now, now_str
 

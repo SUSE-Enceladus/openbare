@@ -36,7 +36,7 @@ django.setup()
 from library.models import *
 
 def checkin_expired_accounts():
-    now = datetime.now(django.utils.timezone.UTC())
+    now = datetime.now(django.utils.timezone.utc)
     for lendable in Lendable.all_types.filter(due_on__lte=now):
         try:
             lendable.checkin()
@@ -54,7 +54,7 @@ def get_warning_message(lendable):
 
 
 def notify_user():
-    now = datetime.now(django.utils.timezone.UTC())
+    now = datetime.now(django.utils.timezone.utc)
     for days in settings.EXPIRATION_NOTIFICATION_WARNING_DAYS:
         lendables = Lendable.all_types.filter(
             Q(due_on__lte=now + timedelta(days)) &

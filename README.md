@@ -21,7 +21,7 @@ project in a company independent way.
 ## Dependencies
 
 * python > 3.2
-* Django ~= 1.10.0
+* Django ~= 1.11.14
 * python-social-auth
 * django-markdown-deux
 * django-split-settings
@@ -89,7 +89,7 @@ pip install -r requirements/dev.txt
 1.  Setup the database
     ```
     python3 manage.py migrate
-    python3 manage.py loaddata
+    python3 manage.py loaddata library/fixtures/frontpage_messages.json
     python3 manage.py createsuperuser
     ```
 

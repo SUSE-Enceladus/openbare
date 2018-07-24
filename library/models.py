@@ -142,7 +142,7 @@ class Lendable(models.Model):
 
     def checkin(self):
         """Update checkin date for lenable."""
-        self.checked_in_on = datetime.now(django.utils.timezone.UTC())
+        self.checked_in_on = datetime.now(django.utils.timezone.utc)
         self.save()
 
     def checkout(self):
@@ -151,7 +151,7 @@ class Lendable(models.Model):
             raise Exception('{} unavailable for checkout.'.format(self.name))
 
         self._set_username()
-        self.checked_out_on = datetime.now(django.utils.timezone.UTC())
+        self.checked_out_on = datetime.now(django.utils.timezone.utc)
         self.__set_initial_due_date()
         self.renewals = settings.MAX_RENEWALS.get(self.type, self.max_renewals)
 
