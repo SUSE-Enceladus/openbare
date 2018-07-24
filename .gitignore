@@ -6,7 +6,7 @@
 *.pyc
 __pycache__/
 **/settings/local_*.py
-db.sqlite3
+*.sqlite3
 media
 
 # Distribution / packaging
