@@ -24,8 +24,9 @@ Group:          Applications/Internet
 Url:            https://github.com/SUSE-Enceladus/openbare
 Source0:        %{name}-%{version}.tar.bz2
 Requires:       python3
-Requires:       python3-Django >= 1.10.0, python3-Django < 1.11.0
-Requires:       python3-python-social-auth
+Requires:       python3-Django >= 1.11.0, python3-Django < 1.12.0
+Requires:       python3-social-auth-core
+Requires:       python3-social-auth-app-django
 Requires:       python3-django-markdown-deux
 Requires:       python3-django-split-settings
 Requires:       python3-boto3
