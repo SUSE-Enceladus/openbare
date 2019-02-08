@@ -70,6 +70,11 @@ HOST = {
     'url': 'https://github.com/openbare/openbare',
 }
 
+# Which python-social-auth backends do you use for authentication?
+# Backend list: http://psa.matiasaguirre.net/docs/backends/index.html
+AUTHENTICATION_BACKENDS += (
+    'social_core.backends.suse.OpenSUSEOpenId',
+)
 
 # Number of days prior to due date when user is notified via email.
 EXPIRATION_NOTIFICATION_WARNING_DAYS = [1]

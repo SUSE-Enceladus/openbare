@@ -21,8 +21,9 @@ project in a company independent way.
 ## Dependencies
 
 * python > 3.2
-* Django ~= 1.10.0
-* python-social-auth
+* Django ~= 1.11.14
+* social-auth-core
+* social-auth-app-django
 * django-markdown-deux
 * django-split-settings
 * django-simple-history
@@ -46,7 +47,8 @@ project in a company independent way.
 
 *   Install all dependencies
     ```
-    zypper in python3-Django python3-python-social-auth \
+    zypper in python3-Django \
+      python3-social-auth-core python3-social-auth-app-django \
       python3-django-debug-toolbar python3-django-markdown-deux \
       python3-django-split-settings python3-boto3 python3-Unidecode \
       python3-coverage
@@ -89,7 +91,7 @@ pip install -r requirements/dev.txt
 1.  Setup the database
     ```
     python3 manage.py migrate
-    python3 manage.py loaddata
+    python3 manage.py loaddata library/fixtures/frontpage_messages.json
     python3 manage.py createsuperuser
     ```
 
