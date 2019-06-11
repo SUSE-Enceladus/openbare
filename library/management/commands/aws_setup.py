@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Creates and enables cloud trail."""
 # -*- coding: utf-8 -*-
 #
 # Copyright © 2017 SUSE LLC.
@@ -23,11 +24,16 @@ import json
 import random
 import string
 
+from library.models import ManagementCommand
+
 from contextlib import suppress
+from datetime import datetime
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.utils.timezone import UTC
 
 CHARS = string.ascii_lowercase + string.digits
+MODULE_NAME = __name__.split('.')[-1]
 
 
 def get_random_string(length=12):
@@ -67,10 +73,14 @@ def enable_cloud_trail(name, bucket_name, session):
 
 
 class Command(BaseCommand):
+    """Command to create and enable cloud trail in AWS."""
+
     help = 'Creates a CloudTrail for openbare and enables logging.'
 
     def handle(self, *args, **options):
         """Create and enable CloudTrail for openbare."""
+        current_time = datetime.now(UTC())
+
         session = boto3.Session(
             aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
             aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
@@ -134,3 +144,9 @@ class Command(BaseCommand):
                     'CloudTrail with name: OpenbareLogs created successfully'
                 )
             )
+
+        command, created = ManagementCommand.objects.get_or_create(
+            name=MODULE_NAME
+        )
+        command.last_success = current_time
+        command.save()
