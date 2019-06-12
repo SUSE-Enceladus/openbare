@@ -6,3 +6,4 @@ django-split-settings
 boto3
 Unidecode
 django-simple-history
+django-typed-models

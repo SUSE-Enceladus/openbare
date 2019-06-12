@@ -31,9 +31,9 @@ from django.utils.translation import ugettext_lazy as _
 
 from library.amazon_account_utils import AmazonAccountUtils
 
-from unidecode import unidecode
-
 from simple_history.models import HistoricalRecords
+from typedmodels.models import TypedModel
+from unidecode import unidecode
 
 
 class CheckoutManager(models.Manager):
@@ -279,3 +279,158 @@ class FrontpageMessage(models.Model):
 
     class Meta:
         ordering = ['rank', '-updated_at']
+
+
+class Resource(TypedModel):
+    """
+    Generic resource type for lendables.
+
+    Using typed models or single table inheritence.
+    * https://github.com/craigds/django-typed-models
+    """
+
+    acquired = models.DateTimeField(null=True, blank=True)
+    lendable = models.ForeignKey(
+        Lendable,
+        on_delete=models.CASCADE,
+        related_name='resources',
+        null=True,
+        blank=True
+    )
+    preserve = models.DateTimeField(null=True, blank=True)
+    reaped = models.BooleanField(default=False)
+    released = models.DateTimeField(null=True, blank=True)
+    resource_id = models.CharField(max_length=127)
+    scope = models.CharField(max_length=63)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    history = HistoricalRecords()
+
+    def __repr__(self):
+        """Display class name (type) and resource id."""
+        return u'<%s: %s>' % (self.__class__.__name__, self.resource_id)
+
+    def __str__(self):
+        """Display resource id as string repr."""
+        return self.resource_id
+
+
+class AWSResource(Resource):
+    """AWS generic resource type."""
+
+    @classmethod
+    def get_resource(cls, resource_id, scope):
+        """
+        Attempt to retrieve resource.
+
+        If resource does not exist return None.
+        """
+        try:
+            resource = cls.objects.get(
+                resource_id=resource_id,
+                scope=scope
+            )
+
+            return resource
+        except:
+            return None
+
+    @classmethod
+    def parse_event(cls, detail, event, lendable):
+        """Parse generic AWS events."""
+        resource_ids = []
+
+        if detail['responseElements'].get('_return'):
+            for item in detail['requestParameters']['resourcesSet']['items']:
+                resource = cls.get_resource(
+                    item['resourceId'],
+                    detail['awsRegion']
+                )
+
+                if resource:
+                    resource_ids.append(item['resourceId'])
+                    for value in \
+                            detail['requestParameters']['tagSet']['items']:
+                        if event['EventName'] == 'CreateTags':
+                            resource.create_tag(value)
+                        elif event['EventName'] == 'DeleteTags':
+                            resource.delete_tag(value)
+                        else:
+                            pass
+
+        return ', '.join(resource_ids)
+
+    def create_tag(self, tag):
+        """If is preserve tag with proper date set date and save."""
+        key = tag.get('key')
+        value = tag.get('value')
+
+        if key and value and key == 'preserve':
+            try:
+                self.preserve = datetime.strptime(value, '%Y/%m/%d')
+                self.save()
+            except:
+                pass
+
+    def delete_tag(self, tag):
+        """If is preserve tag remove preserve date."""
+        key = tag.get('key')
+        if key and key == 'preserve' and self.preserve:
+            self.preserve = None
+            self.save()
+
+
+class AWSInstance(AWSResource):
+    """EC2 instance type."""
+
+    @classmethod
+    def get_instance(cls, instance_id, lendable, scope):
+        """
+        Get or create resource object.
+
+        If a different IAM user triggers the event don't
+        create a new resource with different lendable.
+        """
+        instance, created = cls.objects.get_or_create(
+            resource_id=instance_id,
+            scope=scope
+        )
+
+        if lendable and created:
+            instance.lendable = lendable
+            instance.save()
+
+        return instance
+
+    @classmethod
+    def parse_event(cls, detail, event, lendable):
+        """Parse EC2 instance events."""
+        instance_ids = []
+        for item in detail['responseElements']['instancesSet']['items']:
+            instance_ids.append(item['instanceId'])
+            instance = cls.get_instance(
+                item['instanceId'],
+                lendable,
+                detail['awsRegion']
+            )
+
+            if event['EventName'] == 'RunInstances':
+                instance.run_instance(event['EventTime'])
+            elif event['EventName'] == 'TerminateInstances':
+                instance.terminate_instance(event['EventTime'])
+            else:
+                pass
+
+        return ', '.join(instance_ids)
+
+    def run_instance(self, time):
+        """If event has not been parsed update acquired time."""
+        if not self.acquired:
+            self.acquired = time
+            self.save()
+
+    def terminate_instance(self, time):
+        """If event has not been parsed update released time."""
+        if not self.released:
+            self.released = time
+            self.save()
